@@ -1,7 +1,7 @@
 # Troubleshooting (Resolución de Problemas)
 
 ## 1. La placa Heltec no se une a la red LoRaWAN (Fallo en OTAA Join)
-- **Causa común:** Claves incorrectas en `config.h`.
+- **Causa común:** Claves incorrectas en el código principal (`heltec_gnss_lorawan.ino`).
 - **Solución:** Verifica que el `devEui`, `appEui` y `appKey` coincidan exactamente con los valores en ChirpStack. Verifica también que el orden de los bytes no esté invertido (LSB vs MSB, la librería Heltec suele requerir MSB).
 - **Causa común:** Cobertura de Gateway insuficiente.
 - **Solución:** Asegúrate de que el Gateway esté encendido, conectado a internet y suficientemente cerca del nodo.

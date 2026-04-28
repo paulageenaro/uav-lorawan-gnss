@@ -13,7 +13,7 @@ El sistema propuesto está compuesto por:
 
 ## 📂 Estructura del Repositorio
 
-- [`/firmware`](./firmware/): Código fuente en C++/Arduino para el ESP32. Incluye plantillas de configuración para las claves OTAA.
+- [`/firmware`](./firmware/): Código fuente en C++/Arduino para el ESP32. Las claves OTAA se configuran directamente en el archivo principal.
 - [`/payload-decoders`](./payload-decoders/): Scripts en JavaScript para decodificar las tramas en ChirpStack.
 - [`/docs`](./docs/): Documentación detallada sobre la arquitectura, el formato de datos y la configuración del servidor.
 - [`/images`](./images/): Diagramas e imágenes relacionadas con el proyecto.
