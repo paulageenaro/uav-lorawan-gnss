@@ -1,0 +1,15 @@
+# Arduino y compilados
+build/
+*.hex
+*.elf
+*.bin
+*.map
+*.o
+*.a
+
+# Archivo de configuración con claves reales (¡No subir a Git!)
+config.h
+
+# Archivos de SO
+.DS_Store
+Thumbs.db
