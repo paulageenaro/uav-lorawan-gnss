@@ -21,8 +21,8 @@ El sistema propuesto está compuesto por:
 ## ⚙️ Uso Básico
 
 1. Clona este repositorio.
-2. Ve a la carpeta `firmware/heltec-gnss-lorawan/` y copia `config.example.h` a un nuevo archivo llamado `config.h`.
-3. Introduce tus claves LoRaWAN (DevEUI, AppEUI/JoinEUI, AppKey) en `config.h`.
+2. Ve a la carpeta `firmware/heltec-gnss-lorawan/` y abre `heltec_gnss_lorawan.ino` con Arduino IDE.
+3. Introduce tus claves LoRaWAN (DevEUI, AppEUI/JoinEUI, AppKey) directamente en el código.
 4. Compila y sube el código a tu placa ESP32 mediante Arduino IDE.
 5. Añade el decodificador de `/payload-decoders` a tu *Device Profile* en ChirpStack.
 

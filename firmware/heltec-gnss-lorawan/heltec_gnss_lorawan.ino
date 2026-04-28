@@ -1,7 +1,6 @@
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
 #include "HT_TinyGPS++.h"
-#include "config.h" // Se incluyen las claves de devEui, appEui, appKey
 
 HardwareSerial GNSS(1);
 TinyGPSPlus gps;
@@ -11,6 +10,22 @@ static const int VEXT_CTRL_PIN = 3;    // para dar alimentación al GNSS
 static const int GNSS_RX_PIN   = 33;   // ESP32 RX <- GNSS TX, pin por donde la placa recibe datos del GNSS
 static const int GNSS_TX_PIN   = 34;   // ESP32 TX -> GNSS RX, pin por donde la placa envía datos al GNSS
 static const int GNSS_RST_PIN  = 35;   // pin para sacar el GNSS del reset
+
+// -------------------- OTAA keys --------------------
+uint8_t devEui[] = {
+  0xA4, 0xCF, 0x12, 0x34, 0x56, 0x78, 0x9A, 0x01
+};
+
+uint8_t appEui[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+};
+
+uint8_t appKey[] = {
+  0x11, 0x22, 0x33, 0x44,
+  0x55, 0x66, 0x77, 0x88,
+  0x99, 0xAA, 0xBB, 0xCC,
+  0xDD, 0xEE, 0xF0, 0x01
+};
 
 // -------------------- ABP no usado --------------------
 uint8_t nwkSKey[] = { 0 };

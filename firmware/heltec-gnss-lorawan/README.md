@@ -11,7 +11,6 @@ Este directorio contiene el código en C++/Arduino para la mota embarcada en el 
 ## Configuración y Compilación
 
 1. Abre `heltec_gnss_lorawan.ino` en Arduino IDE.
-2. Duplica el archivo `config.example.h` y nómbralo `config.h`.
-3. Abre `config.h` e introduce los valores reales de tu `devEui`, `appEui` y `appKey` de ChirpStack. **NOTA:** El archivo `config.h` está ignorado en Git para proteger tus credenciales.
-4. Selecciona tu placa Heltec (ej. *Heltec WiFi LoRa 32 (V3)* o similar) en el menú `Herramientas > Placa`.
-5. Compila y sube el código.
+2. Introduce los valores reales de tu `devEui`, `appEui` y `appKey` de ChirpStack directamente en el código.
+3. Selecciona tu placa Heltec (ej. *Heltec WiFi LoRa 32 (V3)* o similar) en el menú `Herramientas > Placa`.
+4. Compila y sube el código.
