@@ -13,7 +13,9 @@ El sistema propuesto está compuesto por:
 
 ## 📂 Estructura del Repositorio
 
-- [`/firmware`](./firmware/): Código fuente en C++/Arduino para el ESP32. Las claves OTAA se configuran directamente en el archivo principal.
+- [`/firmware`](./firmware/): Código fuente en C++/Arduino para el ESP32. Las claves OTAA se configuran directamente en el código. Contiene dos versiones:
+  - **v1 (`heltec-gnss-lorawan`)**: Versión estándar con Deep Sleep activado para máximo ahorro de energía.
+  - **v2 (`heltec_gnss_lorawan_v2`)**: Versión optimizada para depuración. Desactiva el Deep Sleep para evitar desconexiones del puerto USB y facilita la lectura del Monitor Serie.
 - [`/payload-decoders`](./payload-decoders/): Scripts en JavaScript para decodificar las tramas en ChirpStack.
 - [`/docs`](./docs/): Documentación detallada sobre la arquitectura, el formato de datos y la configuración del servidor.
 - [`/images`](./images/): Diagramas e imágenes relacionadas con el proyecto.
@@ -21,7 +23,7 @@ El sistema propuesto está compuesto por:
 ## ⚙️ Uso Básico
 
 1. Clona este repositorio.
-2. Ve a la carpeta `firmware/heltec-gnss-lorawan/` y abre `heltec_gnss_lorawan.ino` con Arduino IDE.
+2. Ve a la carpeta de la versión deseada en `/firmware/` y abre el archivo `.ino` con Arduino IDE (recomendamos empezar con la **v2** si estás realizando pruebas).
 3. Introduce tus claves LoRaWAN (DevEUI, AppEUI/JoinEUI, AppKey) directamente en el código.
 4. Compila y sube el código a tu placa ESP32 mediante Arduino IDE.
 5. Añade el decodificador de `/payload-decoders` a tu *Device Profile* en ChirpStack.
