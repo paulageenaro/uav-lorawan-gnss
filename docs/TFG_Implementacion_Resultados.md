@@ -107,6 +107,8 @@ Para la prueba final integrada con el UAV, se diseñó un codec específico capa
 
 Este objeto JSON estandarizado es el que finalmente se transfiere e inyecta en el bus de datos hacia InfluxDB.
 
+![Captura de la interfaz de ChirpStack mostrando el registro de eventos del dispositivo Heltec. Se aprecian las tramas de datos "up" junto con el evento de unión "join", así como la decodificación exitosa en formato JSON de las métricas del dron (velocidad, batería, tiempo de vuelo) y estado GNSS dentro del campo object.](../images/chirpstack_events_uplink_payload.jpg)
+
 ## 8. Integración con InfluxDB
 
 El enlace entre ChirpStack e InfluxDB (Base de Datos de Series Temporales) persiste tanto los metadatos de radiofrecuencia como la información extraída del *payload*. 
@@ -123,6 +125,8 @@ El panel de control (*dashboard*) diseñado en Grafana centraliza la telemetría
 2. **Integridad de Red:** Monitorización del contador `fCnt`. Un crecimiento lineal asegura la correcta recepción; saltos o estancamientos evidencian pérdidas de paquetes o reinicios del nodo.
 3. **Telemetría UAV:** Paneles de tipo *Gauge* y gráficas temporales que muestran el nivel de batería, velocidad instantánea, altitud relativa (ToF) y tiempo de vuelo.
 4. **Posicionamiento y Cobertura:** Un mapa interactivo ubica cada transmisión. El panel cruza las coordenadas geográficas con la intensidad de la señal (`RSSI`). El sistema está configurado de modo que, si el GNSS no ha logrado triangular la posición (`latitude` = nulo), no se plotea el punto erróneo, manteniendo la pureza cartográfica del mapa de cobertura.
+
+![Captura del panel principal diseñado en Grafana. Muestra en tiempo real la evolución de la calidad del enlace radio (gráficas temporales de RSSI y SNR), la progresión del contador de paquetes (fCnt) y los indicadores (*gauges* y gráficas) de la telemetría del UAV: batería restante (%), altitud relativa ToF (cm), velocidad (cm/s) y tiempo de vuelo (s).](../images/grafana_dashboard_telemetry.jpg)
 
 ## 10. Problemas encontrados y soluciones implementadas
 
