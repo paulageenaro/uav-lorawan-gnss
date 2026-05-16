@@ -8,7 +8,9 @@ En ChirpStack, los nodos envían datos codificados en base64 o como matriz de by
 2. Navega a **Device Profiles** y selecciona el perfil que usan tus motas Heltec.
 3. Ve a la pestaña **Codec**.
 4. En **Payload codec**, selecciona `Custom JavaScript codec functions`.
-5. En el campo de texto, copia y pega el contenido del archivo `chirpstack_decoder.js` de esta carpeta.
+5. En el campo de texto, copia y pega el contenido del archivo correspondiente:
+   - Para la prueba GNSS básica, usa `chirpstack_decoder.js` (espera 12 bytes).
+   - Para la prueba integrada con el UAV, usa `chirpstack_decoder_20_bytes.js` (espera 20 bytes).
 6. Guarda los cambios.
 
-A partir de este momento, los mensajes que lleguen a ChirpStack incluirán el objeto `object` con los datos descodificados (latitud, longitud, altitud, etc.).
+A partir de este momento, los mensajes que lleguen a ChirpStack incluirán un objeto `data` con las métricas descodificadas (latitud, longitud, altitud, métricas del dron, etc.).

@@ -1,22 +1,21 @@
 # Troubleshooting (Resolución de Problemas)
 
-## 1. La placa Heltec no se une a la red LoRaWAN (Fallo en OTAA Join)
-- **Causa común:** Claves incorrectas en el código principal (`heltec_gnss_lorawan.ino`).
-- **Solución:** Verifica que el `devEui`, `appEui` y `appKey` coincidan exactamente con los valores en ChirpStack. Verifica también que el orden de los bytes no esté invertido (LSB vs MSB, la librería Heltec suele requerir MSB).
-- **Causa común:** Cobertura de Gateway insuficiente.
-- **Solución:** Asegúrate de que el Gateway esté encendido, conectado a internet y suficientemente cerca del nodo.
+## 1. El puerto USB se desconecta continuamente
+- **Causa común:** El código de la versión estable usa `LoRaWAN.sleep()`. Este modo apaga el controlador USB para ahorrar energía máxima.
+- **Solución:** No es un error. Si necesitas ver los logs por el monitor serie de forma continua para depurar, carga el código de la carpeta `v2_depuracion` en lugar de la versión estable.
 
-## 2. El Fix del GNSS se mantiene a `0` o Latitud/Longitud son `0`
-- **Causa común:** El módulo GNSS no tiene visibilidad del cielo.
-- **Solución:** Si estás dentro de un edificio, sal al exterior. Un módulo GNSS típico puede tardar desde unos segundos hasta un par de minutos en hacer el "Cold Start" y adquirir suficientes satélites.
-- **Causa común:** Los pines RX/TX están mal conectados.
-- **Solución:** Revisa que el Pin TX del ESP32 vaya al Pin RX del GNSS, y viceversa. Asegúrate también de que los baudios del GNSS sean 115200 (como se define en `GNSS.begin`).
+## 2. La placa no transmite datos (Join exitoso pero sin uplinks)
+- **Causa común:** En el entorno de Arduino, funciones bloqueantes pueden paralizar la máquina de estados de LoRaWAN.
+- **Solución:** En el código se utiliza `readGpsWindow(1000)` en lugar de esperas activas infinitas para evitar este bloqueo. Asegúrate de no añadir `delay()` largos dentro de los casos `DEVICE_STATE_SEND` o `SLEEP`.
 
 ## 3. ChirpStack muestra un error de Codec
-- **Causa común:** El tamaño del payload no es 12 bytes.
-- **Solución:** Verifica los logs del servidor para ver cuántos bytes se están recibiendo. Si recibes algo distinto a 12, es posible que la configuración de la librería Heltec esté añadiendo cabeceras extra o que haya un problema en el `appDataSize`.
-- **Solución:** Revisa el código del Custom JavaScript Codec en el Device Profile.
+- **Causa común:** El tamaño del payload enviado no coincide con el esperado por el decodificador.
+- **Solución:** Verifica que el código de la mota (12 o 20 bytes) corresponda con el script JavaScript seleccionado en el **Device Profile** de ChirpStack.
 
-## 4. Reinicios constantes del ESP32
-- **Causa común:** Alimentación insuficiente.
-- **Solución:** El módulo GNSS y el chip de radio LoRa pueden consumir picos de corriente importantes. Si estás alimentando por USB, asegúrate de que el cable y el puerto proporcionen suficiente corriente. Si usas batería, asegúrate de que esté cargada.
+## 4. Grafana no muestra los datos, pero ChirpStack sí
+- **Causa común:** Las variables en InfluxDB se guardan bajo el tag `_measurement` y no como simples campos en un measurement genérico.
+- **Solución:** En Grafana, la consulta Flux debe incluir explícitamente `|> filter(fn: (r) => r["_measurement"] == "device_frmpayload_data_drone_battery_percent")` (por ejemplo) en vez de buscar en el campo genérico.
+
+## 5. El Fix del GNSS se mantiene a `0`
+- **Causa común:** El módulo GNSS no tiene visibilidad del cielo (Cold Start incompleto).
+- **Solución:** Sal al exterior. Los módulos envían coordenadas a 0 o envían latitud/longitud inválidas hasta triangular al menos 3 o 4 satélites.

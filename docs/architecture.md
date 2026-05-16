@@ -1,20 +1,33 @@
 # Arquitectura de la Red UAV LoRaWAN
 
-El Trabajo Fin de Grado propone una arquitectura enfocada en redes de emergencia, donde dispositivos finales puedan ser desplegados rápidamente usando drones (UAVs).
+El Trabajo Fin de Grado propone una arquitectura enfocada en redes de emergencia, evaluada en dos escenarios incrementales: una prueba básica de posicionamiento y una prueba avanzada de integración con telemetría de vuelo.
 
-## Diagrama de la Red
+## 1. Escenario Básico (Mota Sensora GNSS)
 
 ```mermaid
 graph LR
-    A[Módulo GNSS] -->|UART NMEA| B(ESP32 Heltec - UAV)
+    A[Módulo GNSS] -->|UART NMEA| B(ESP32 Heltec)
     B -->|LoRaWAN OTAA EU868| C[Gateway LoRaWAN]
     C -->|UDP / MQTT| D((Network Server ChirpStack))
-    D -->|JSON| E[Aplicación Final / Dashboard]
+    D -->|JSON| E[InfluxDB + Grafana]
 ```
 
-## Componentes
+## 2. Escenario Integrado (UAV + Pasarela WiFi)
 
-1. **UAV / Dron**: Transporta la mota (nodo final) permitiéndole alcanzar posiciones con línea de visión directa (LoS) mejorada para las comunicaciones LoRa, y acceder a lugares complejos.
-2. **Nodo Final (Heltec ESP32 + GNSS)**: Captura la latitud, longitud y altitud y envía estos datos compactados cada cierto tiempo.
-3. **Gateway LoRaWAN**: Una antena y concentrador que capta la radiofrecuencia (banda EU868 en Europa) y la traduce a paquetes IP hacia el Network Server.
-4. **ChirpStack (Network Server)**: Autentica los dispositivos, controla la seguridad de la red y decodifica el payload (usando nuestro `chirpstack_decoder.js`).
+```mermaid
+graph LR
+    UAV[Dron Tello] <-->|WiFi / UDP| ESP[ESP32 Pasarela]
+    ESP -->|Broadcast UDP| B(Heltec Mota Integrada)
+    A[Módulo GNSS] -->|UART NMEA| B
+    B -->|LoRaWAN OTAA| C[Gateway LoRaWAN]
+    C -->|UDP / MQTT| D((Network Server ChirpStack))
+    D -->|JSON| E[InfluxDB + Grafana]
+```
+
+## Componentes Principales
+
+1. **UAV / Dron (Tello Talent)**: Vuela en la zona de emergencia. En el escenario integrado, expone su estado (batería, velocidad, ToF) mediante su SDK por WiFi.
+2. **ESP32 Pasarela**: Actúa como puente intermedio. Se conecta al dron, extrae las métricas por UDP y las emite a su propia red WiFi local.
+3. **Nodo Final (Heltec ESP32 + GNSS)**: Captura la posición satelital. En el escenario integrado, enciende temporalmente su WiFi para absorber las métricas del dron, unifica ambos datos y los emite por LoRa.
+4. **Gateway LoRaWAN**: Concentrador de radiofrecuencia que enlaza el entorno físico con la infraestructura de red en la nube.
+5. **ChirpStack + InfluxDB + Grafana**: El servidor de red valida la seguridad, decodifica el *payload* binario y lo transfiere a la base de datos temporal, para que Grafana pueda pintar el mapa de cobertura y las métricas.
