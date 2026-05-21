@@ -5,6 +5,7 @@ El Trabajo Fin de Grado propone una arquitectura enfocada en redes de emergencia
 ## 1. Escenario Básico (Mota Sensora GNSS)
 
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "35px"}}}%%
 graph LR
     A[Módulo GNSS] -->|UART NMEA| B(ESP32 Heltec)
     B -->|LoRaWAN OTAA EU868| C[Gateway LoRaWAN]
@@ -15,6 +16,7 @@ graph LR
 ## 2. Escenario Integrado (UAV + Pasarela WiFi)
 
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "35px"}}}%%
 graph LR
     UAV[Dron Tello] <-->|WiFi STA / UDP| ESP[ESP32 Pasarela AP]
     ESP -->|WiFi AP / Broadcast UDP| B(Heltec Mota Integrada)
