@@ -23,10 +23,10 @@ El sistema propuesto está compuesto por:
 ## ⚙️ Uso Básico
 
 1. Clona este repositorio.
-2. Ve a la carpeta de la versión deseada en `/firmware/` y abre el archivo `.ino` con Arduino IDE (recomendamos empezar con la **v2** si estás realizando pruebas).
-3. Introduce tus claves LoRaWAN (DevEUI, AppEUI/JoinEUI, AppKey) directamente en el código.
-4. Compila y sube el código a tu placa ESP32 mediante Arduino IDE.
-5. Añade el decodificador de `/payload-decoders` a tu *Device Profile* en ChirpStack.
+2. Ir a la carpeta de la versión deseada en `/firmware/` y abrir el archivo `.ino` con Arduino IDE (se recomienda empezar con la **v2** si se están realizando pruebas).
+3. Introducir las claves LoRaWAN (DevEUI, AppEUI/JoinEUI, AppKey) directamente en el código.
+4. Compilar y subir el código a la placa ESP32 mediante Arduino IDE.
+5. Añadir el decodificador de `/payload-decoders` al *Device Profile* en ChirpStack.
 
 ## 📄 Licencia
 
