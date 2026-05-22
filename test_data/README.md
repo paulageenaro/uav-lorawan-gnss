@@ -1,6 +1,6 @@
 # Datos de Prueba (Test Data)
 
-Esta carpeta está destinada a almacenar archivos de datos generados durante las pruebas del sistema UAV-LoRaWAN. Es muy útil conservar estos archivos como evidencia para el TFG y para facilitar la depuración o el rediseño de decodificadores y dashboards.
+Esta carpeta está destinada a almacenar archivos de datos generados durante las pruebas del sistema UAV-LoRaWAN. Es muy útil conservar estos archivos como evidencia y para facilitar la depuración o el rediseño de decodificadores y dashboards.
 
 ## Tipos de archivos recomendados
 
