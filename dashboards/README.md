@@ -20,14 +20,17 @@ Este dashboard centraliza todos los datos de la mota **LINK ONE 13** (DevEUI: `0
 Se utiliza como **mota de apoyo para validar la visualización geográfica en Grafana**. A diferencia de la Heltec, las coordenadas GNSS de LINK ONE (latitud, longitud y geohash) se almacenan correctamente en InfluxDB, lo que permite representar su posición en el mapa de Grafana. Este dashboard valida que el flujo completo ChirpStack → InfluxDB → Grafana funciona correctamente para los datos GNSS.
 
 **Paneles incluidos:**
-- RSSI de LINK ONE (serie temporal, dBm)
-- SNR de LINK ONE (serie temporal, dB)
-- Contador de tramas fCnt de LINK ONE (serie temporal)
-- Última latitud y longitud recibidas (stat)
-- Último geohash (stat)
-- Evolución temporal de latitud y longitud
-- Mapa GNSS interactivo con las posiciones almacenadas en InfluxDB
+- Panel de descripción de la mota LINK ONE (markdown)
+- Payload counter de Cayenne canal 1 (stat)
+- Disponibilidad del GPS (stat, indicando si es real o prueba)
+- Última latitud, longitud y altitud (stat)
+- frame number (fCnt), RSSI y SNR (stat y gauges)
+- Evolución temporal de latitud, longitud y altitud (series temporales)
+- Evolución temporal de fCnt, RSSI y SNR (series temporales)
+- Histogramas de distribución de RSSI y SNR
+- Mapas de cobertura interactivos de SNR y RSSI cruzados con GPS (geomaps)
 - Tabla de diagnóstico con los últimos valores recibidos
+
 
 **Fuente de los datos GNSS:**
 El dashboard acepta coordenadas tanto si aparecen como medidas tipo `device_frmpayload_data_latitude` / `device_frmpayload_data_longitude` / `device_frmpayload_data_geohash`, como si aparecen como campos dentro de `device_uplink` con `_field` = `latitude`, `longitude` o `geohash`.
@@ -74,13 +77,13 @@ Permite monitorizar el sistema completo durante las sesiones de prueba, comparan
 **Paneles incluidos:**
 - RSSI, SNR y fCnt de **Heltec** (series temporales, color ámbar)
 - RSSI, SNR y fCnt de **LINK ONE** (series temporales, color azul)
-- Mapa GNSS de LINK ONE (con sus coordenadas disponibles en InfluxDB)
-- Diagnóstico GNSS de Heltec (latitud, longitud y altitud)
-- Métricas del dron: batería (%), ToF (cm), velocidad, tiempo (s) y SDK raw
-- Tabla de últimos valores de Heltec
-- Tabla de últimos valores de LINK ONE
-- Tabla resumen del sistema con estado de GNSS por dispositivo
-- Notas explicativas sobre la limitación GNSS de la Heltec
+- Mapa multi-capa interactivo de trayectorias (Heltec + LINK ONE) cruzado con RSSI y SNR (geomap)
+- Diagnóstico GNSS de Heltec (latitud, longitud y altitud en series temporales)
+- Diagnóstico y geolocalización de **LINK ONE**: payload counter, disponibilidad GPS, y stat panels para última latitud, longitud y altitud
+- Métricas del dron recibidas por la Heltec: batería (%), distancia ToF (cm), velocidad, tiempo (s) y SDK raw en stat y series temporales
+- Tablas de diagnóstico con los últimos valores de Heltec y LINK ONE
+- Panel de resumen explicativo sobre el funcionamiento del sistema y la limitación GNSS de la Heltec
+
 
 **Separación de datos:**
 Este dashboard **no mezcla** RSSI/SNR de la Heltec con coordenadas de LINK ONE como si fueran del mismo paquete. Cada serie temporal está filtrada explícitamente por el DevEUI correspondiente. El mapa GNSS solo muestra puntos de los dispositivos que tienen coordenadas almacenadas en InfluxDB (actualmente, solo LINK ONE).
