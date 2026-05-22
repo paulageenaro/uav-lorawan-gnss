@@ -55,7 +55,7 @@ uint16_t userChannelsMask[6] = {
 LoRaMacRegion_t loraWanRegion = ACTIVE_REGION;
 DeviceClass_t loraWanClass = CLASS_A;
 
-uint32_t appTxDutyCycle = 30000;   // 30 s entre envíos
+uint32_t appTxDutyCycle = 10000;   // 10 s entre envíos
 bool overTheAirActivation = true;  // OTAA
 bool loraWanAdr = true;            // ADR activado
 bool isTxConfirmed = false;        // uplinks no confirmados
@@ -432,7 +432,7 @@ void loop() {
       }
 
       // Puede desconectar temporalmente el monitor serie, pero es lo que
-      // permite que la librería LoRaWAN funcione correctamente en tu caso.
+      // permite que la librería LoRaWAN funcione correctamente.
       LoRaWAN.sleep(loraWanClass);
       break;
 

@@ -1,0 +1,341 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "text",
+      "title": "ℹ️ Dashboard LINK ONE — Validación GNSS",
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "## LINK ONE (DevEUI: `000000000000100d`)\nEste dashboard centraliza los datos de la mota **LINK ONE 13**, utilizada en el TFG como **mota de apoyo para validar la visualización geográfica en Grafana**. Sus coordenadas GNSS (latitud y longitud) se almacenan correctamente en InfluxDB, lo que permite representar el mapa de cobertura. Los paneles de calidad LoRaWAN (RSSI, SNR, fCnt) permiten evaluar el enlace radio de esta mota."
+      }
+    },
+    {
+      "type": "row",
+      "title": "📡 Calidad del enlace LoRaWAN — LINK ONE",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 3 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "RSSI — LINK ONE (dBm)",
+      "description": "Potencia de señal recibida por el gateway desde LINK ONE.",
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 4 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"rssi\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"rssi_linkone\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dBm",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 12,
+            "showPoints": "auto",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "SNR — LINK ONE (dB)",
+      "description": "Relación señal/ruido del enlace LoRaWAN de LINK ONE.",
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 4 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"snr\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"snr_linkone\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dB",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 12,
+            "showPoints": "auto",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Contador de tramas fCnt — LINK ONE",
+      "description": "Frame counter LoRaWAN de LINK ONE. Incremento esperado en cada uplink.",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 4 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"f_cnt\")\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"fcnt_linkone\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 12,
+            "showPoints": "auto",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "title": "🛰️ Coordenadas GNSS — LINK ONE",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 11 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Última Latitud — LINK ONE",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 12 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_frmpayload_data_latitude\" or\n    (r[\"_measurement\"] == \"device_uplink\" and r[\"_field\"] == \"latitude\")\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"value\" or r[\"_field\"] == \"latitude\")\n  |> last()\n  |> yield(name: \"lat_last\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "none", "decimals": 6 },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Última Longitud — LINK ONE",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 12 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_frmpayload_data_longitude\" or\n    (r[\"_measurement\"] == \"device_uplink\" and r[\"_field\"] == \"longitude\")\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"value\" or r[\"_field\"] == \"longitude\")\n  |> last()\n  |> yield(name: \"lon_last\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "none", "decimals": 6 },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Último Geohash — LINK ONE",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 12 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_frmpayload_data_geohash\" or\n    (r[\"_measurement\"] == \"device_uplink\" and r[\"_field\"] == \"geohash\")\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"value\" or r[\"_field\"] == \"geohash\")\n  |> last()\n  |> yield(name: \"geohash_last\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "none" },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Latitud / Longitud en el tiempo — LINK ONE",
+      "description": "Evolución temporal de las coordenadas GNSS almacenadas en InfluxDB para LINK ONE.",
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_frmpayload_data_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_longitude\"\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"gps_linkone\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 6,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 8,
+            "showPoints": "auto",
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "title": "🗺️ Mapa GNSS — LINK ONE",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "collapsed": false
+    },
+    {
+      "type": "geomap",
+      "title": "Mapa GNSS — Posición LINK ONE",
+      "description": "Representación geográfica de las coordenadas GNSS de LINK ONE almacenadas en InfluxDB. Solo aparecen puntos si latitude y longitude son válidas.",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 24 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_frmpayload_data_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_longitude\"\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_measurement\"], valueColumn: \"_value\")\n  |> rename(columns: {\n    device_frmpayload_data_latitude: \"latitude\",\n    device_frmpayload_data_longitude: \"longitude\"\n  })\n  |> filter(fn: (r) => exists r.latitude and exists r.longitude)\n  |> yield(name: \"gps_map_linkone\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "none" },
+        "overrides": []
+      },
+      "options": {
+        "view": { "id": "coords", "lat": 37.1773, "lon": -3.5986, "zoom": 13 },
+        "basemap": { "type": "default", "name": "Layer 0", "config": {} },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showScale": true,
+          "showDebug": false
+        },
+        "tooltip": { "mode": "details" },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "LINK ONE GPS",
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "showLegend": true,
+              "style": {
+                "size": { "fixed": 10, "min": 5, "max": 20 },
+                "color": { "fixed": "#3B82F6" },
+                "opacity": 0.9,
+                "symbol": { "fixed": "img/icons/marker/circle.svg", "mode": "fixed" }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "row",
+      "title": "📋 Diagnóstico — Últimos valores LINK ONE",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 },
+      "collapsed": false
+    },
+    {
+      "type": "table",
+      "title": "Últimos valores recibidos — LINK ONE",
+      "description": "Tabla de diagnóstico con los últimos registros de LINK ONE en InfluxDB. Permite verificar qué campos se están almacenando correctamente.",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 39 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_uplink\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_longitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_geohash\"\n  )\n  |> keep(columns: [\"_time\", \"_measurement\", \"_field\", \"_value\", \"device_name\", \"dev_eui\"])\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 100)"
+        }
+      ],
+      "options": { "showHeader": true },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["LoRaWAN", "ChirpStack", "InfluxDB", "TFG", "UAV", "LINK-ONE", "GNSS"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource InfluxDB",
+        "multi": false,
+        "name": "DS_INFLUXDB",
+        "options": [],
+        "query": "influxdb",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "lorawan-gps-uav",
+          "value": "lorawan-gps-uav"
+        },
+        "hide": 0,
+        "label": "Bucket InfluxDB",
+        "name": "bucket",
+        "query": "lorawan-gps-uav",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "title": "TFG UAV-LoRaWAN — LINK ONE GNSS",
+  "uid": "tfg-linkone-gnss-dashboard",
+  "version": 1,
+  "weekStart": ""
+}

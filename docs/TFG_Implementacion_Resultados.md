@@ -101,13 +101,13 @@ Para la prueba final integrada con el UAV, se diseñó un codec específico capa
 4. **Formato JSON:** Genera un objeto estructurado con las siguientes claves finales:
    - `gps_fix` (booleano) y `gps_fix_raw` (0 o 1).
    - `satellites` (número de satélites).
-   - `latitude`, `longitude` y `altitude_m` (valores geográficos o nulos si no hay *fix*).
+   - `latitude`, `longitude` y `altitude_m` (valores geográficos o valor centinela `0` si no hay *fix*).
    - `drone_battery_percent`, `drone_tof_cm`, `drone_speed`, `drone_time_s` (métricas de vuelo del UAV).
    - `drone_sdk_active` (booleano) y `drone_sdk_raw` (indicador del SDK del dron).
 
 Este objeto JSON estandarizado es el que finalmente se transfiere e inyecta en el bus de datos hacia InfluxDB.
 
-![Captura de la interfaz de ChirpStack mostrando el registro de eventos del dispositivo Heltec. Se aprecian las tramas de datos "up" junto con el evento de unión "join", así como la decodificación exitosa en formato JSON de las métricas del dron (velocidad, batería, tiempo de vuelo) y estado GNSS dentro del campo object.](../images/chirpstack_events_uplink_payload.jpg)
+![Captura de la interfaz de ChirpStack mostrando el registro de eventos del dispositivo Heltec. Se aprecian las tramas de datos "up" junto con la decodificación exitosa en formato JSON de las métricas del dron (batería a 255 y otros a -1 indicando desconexión) y estado GNSS dentro del campo object.](../images/chirpstack_test_gnss_events.png)
 
 ## 8. Integración con InfluxDB
 
@@ -124,7 +124,7 @@ El panel de control (*dashboard*) diseñado en Grafana centraliza la telemetría
 1. **Calidad de Señal:** Gráficas temporales de `RSSI` y `SNR`, esenciales para auditar la cobertura y penetración de la tecnología LoRa.
 2. **Integridad de Red:** Monitorización del contador `fCnt`. Un crecimiento lineal asegura la correcta recepción; saltos o estancamientos evidencian pérdidas de paquetes o reinicios del nodo.
 3. **Telemetría UAV:** Paneles de tipo *Gauge* y gráficas temporales que muestran el nivel de batería, velocidad instantánea, altitud relativa (ToF) y tiempo de vuelo.
-4. **Posicionamiento y Cobertura:** Un mapa interactivo ubica cada transmisión. El panel cruza las coordenadas geográficas con la intensidad de la señal (`RSSI`). El sistema está configurado de modo que, si el GNSS no ha logrado triangular la posición (`latitude` = nulo), no se plotea el punto erróneo, manteniendo la pureza cartográfica del mapa de cobertura.
+4. **Posicionamiento y Cobertura:** Un mapa interactivo ubica cada transmisión. El panel cruza las coordenadas geográficas con la intensidad de la señal (`RSSI`). El sistema está configurado de modo que los valores centinela de latitud/longitud en `0` son filtrados por las consultas de Grafana, evitando plotear puntos erróneos (como la coordenada 0,0 en el Golfo de Guinea) y manteniendo la pureza cartográfica del mapa de cobertura.
 
 ![Captura del panel principal diseñado en Grafana. Muestra en tiempo real la evolución de la calidad del enlace radio (gráficas temporales de RSSI y SNR), la progresión del contador de paquetes (fCnt) y los indicadores (*gauges* y gráficas) de la telemetría del UAV: batería restante (%), altitud relativa ToF (cm), velocidad (cm/s) y tiempo de vuelo (s).](../images/grafana_dashboard_telemetry.jpg)
 
@@ -143,7 +143,7 @@ La implementación demuestra la viabilidad de utilizar LoRaWAN en escenarios de 
 
 - **Comunicaciones:** Se verificó la correcta transmisión OTAA y una recepción estable en el Gateway. Las métricas de `RSSI` y `SNR` reflejan los límites del margen de enlace según el entorno (línea de vista frente a obstáculos urbanos).
 - **Decodificación:** Las tramas binarias se transformaron en variables físicas congruentes en la infraestructura de la nube, validando la solidez de la codificación y de las temporizaciones de las ventanas de escucha asíncronas.
-- **Limitaciones operativas:** Se evidenció que la carencia de *fix* GPS provoca el envío de la variable a nulo; el *payload* se transmite igualmente permitiendo analizar la cobertura LoRaWAN, aunque se pierda el posicionamiento. De la misma forma, si el dron pierde la conexión de la red local con la mota, la mota continúa alertando sobre su estado emitiendo banderas de error (valores de `-1`).
+- **Limitaciones operativas:** Se evidenció que la carencia de *fix* GPS se gestiona mediante el envío de valores centinela (`0`); el *payload* se transmite igualmente permitiendo analizar la cobertura LoRaWAN (RSSI, SNR), aunque se pierda el posicionamiento. De la misma forma, si el dron pierde la conexión de la red local con la mota, la mota continúa alertando sobre su estado emitiendo banderas de error específicas (batería a `255`, resto a `-1`).
 
 ---
 

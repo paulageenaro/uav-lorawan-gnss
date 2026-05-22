@@ -1,0 +1,48 @@
+{
+  "phyPayload": {
+    "mhdr": {
+      "mType": "UnconfirmedDataUp",
+      "major": "LoRaWANR1"
+    },
+    "macPayload": {
+      "fhdr": {
+        "devAddr": "00e8cff5",
+        "fCtrl": {
+          "adr": true,
+          "adrAckReq": false,
+          "ack": false,
+          "fPending": false,
+          "classB": false
+        },
+        "fCnt": 65,
+        "fOpts": []
+      },
+      "fPort": 2,
+      "frmPayload": "0106023795a6ffc8b12b02c5ffffffffffff00"
+    },
+    "mic": "2214721150"
+  },
+  "txInfo": {
+    "frequency": 867300000,
+    "modulation": {
+      "lora": {
+        "bandwidth": 125000,
+        "spreadingFactor": 7,
+        "codeRate": "CR_4_5"
+      }
+    }
+  },
+  "rxInfo": [
+    {
+      "gatewayId": "0016c001f10f5dfa",
+      "uplinkId": 42677,
+      "nsTime": "2026-05-19T15:44:38.494010008+00:00",
+      "rssi": -50,
+      "snr": 14,
+      "channel": 4,
+      "location": {},
+      "context": "N9gPeQ==",
+      "crcStatus": "CRC_OK"
+    }
+  ]
+}
