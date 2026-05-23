@@ -1,6 +1,6 @@
 # Arquitectura de la Red UAV LoRaWAN
 
-El Trabajo Fin de Grado propone una arquitectura enfocada en redes de emergencia, evaluada en dos escenarios incrementales: una prueba básica de posicionamiento y una prueba avanzada de integración con telemetría de vuelo.
+Este proyecto propone una arquitectura enfocada en redes de emergencia, evaluada en dos escenarios incrementales: una prueba básica de posicionamiento y una prueba avanzada de integración con telemetría de vuelo.
 
 ## 1. Escenario Básico (Mota Sensora GNSS)
 

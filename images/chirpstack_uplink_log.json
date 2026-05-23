@@ -1,0 +1,61 @@
+{
+    "deduplicationId": "cabec381-1712-4a0e-ac92-8bc0d8cc5660",
+    "time": "2026-05-23T09:33:54.310239431+00:00",
+    "deviceInfo": {
+        "tenantId": "505970af-7fcb-4c30-b4e6-c0e0afa93bf4",
+        "tenantName": "uav-lorawan",
+        "applicationId": "f0ff6611-8de1-4a10-a220-b694acc1e99c",
+        "applicationName": "GPS-UAV",
+        "deviceProfileId": "7a07d94e-6c29-4990-bae9-dfc5dd54ce1a",
+        "deviceProfileName": "Heltec Wireless Tracker OTAA",
+        "deviceName": "heltec-tracker-01",
+        "devEui": "a4cf123456789a01",
+        "deviceClassEnabled": "CLASS_A",
+        "tags": {}
+    },
+    "devAddr": "01fa2344",
+    "adr": true,
+    "dr": 5,
+    "fCnt": 2,
+    "fPort": 2,
+    "confirmed": false,
+    "data": "AQsCNtTv/8kI+gLX/////////wA=",
+    "object": {
+        "gps_fix": 1,
+        "drone_tof_cm": -1,
+        "satellites": 11,
+        "altitude_m": 727,
+        "drone_time_s": -1,
+        "latitude": 37.147887,
+        "drone_sdk_active": 0,
+        "drone_sdk_raw": 0,
+        "longitude": -3.602182,
+        "drone_speed": -1,
+        "gps_fix_raw": 1,
+        "drone_battery_percent": 255
+    },
+    "rxInfo": [
+        {
+            "gatewayId": "0016c001f10f6dfa",
+            "uplinkId": 33850,
+            "nsTime": "2026-05-23T09:33:54.070025238+00:00",
+            "rssi": -106,
+            "snr": -7,
+            "channel": 3,
+            "location": {},
+            "context": "rA+BBA==",
+            "crcStatus": "CRC_OK"
+        }
+    ],
+    "txInfo": {
+        "frequency": 867100000,
+        "modulation": {
+            "lora": {
+                "bandwidth": 125000,
+                "spreadingFactor": 7,
+                "codeRate": "CR_4_5"
+            }
+        }
+    },
+    "regionConfigId": "eu868"
+}

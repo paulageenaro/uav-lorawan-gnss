@@ -1,4 +1,4 @@
-# Capítulo X: Implementación y Resultados
+# Implementación y Resultados
 
 ## 1. Descripción general del sistema implementado
 
@@ -107,6 +107,72 @@ Para la prueba final integrada con el UAV, se diseñó un codec específico capa
 
 Este objeto JSON estandarizado es el que finalmente se transfiere e inyecta en el bus de datos hacia InfluxDB.
 
+A continuación se muestra un ejemplo de registro real JSON exportado de ChirpStack (`chirpstack_uplink_log.json`), correspondiente a una transmisión real de la mota `heltec-tracker-01` en SF7 (867.1 MHz) registrada durante la sesión del **23 de mayo de 2026**. Se aprecian los metadatos de radio del gateway receptor (con una señal débil de RSSI `-106 dBm` y SNR `-7 dB`), la posición GNSS válida con 11 satélites y la correcta asignación de los valores centinela de error ante la desconexión del dron (batería a `255`, y ToF, velocidad y tiempo a `-1`):
+
+```json
+{
+    "deduplicationId": "cabec381-1712-4a0e-ac92-8bc0d8cc5660",
+    "time": "2026-05-23T09:33:54.310239431+00:00",
+    "deviceInfo": {
+        "tenantId": "505970af-7fcb-4c30-b4e6-c0e0afa93bf4",
+        "tenantName": "uav-lorawan",
+        "applicationId": "f0ff6611-8de1-4a10-a220-b694acc1e99c",
+        "applicationName": "GPS-UAV",
+        "deviceProfileId": "7a07d94e-6c29-4990-bae9-dfc5dd54ce1a",
+        "deviceProfileName": "Heltec Wireless Tracker OTAA",
+        "deviceName": "heltec-tracker-01",
+        "devEui": "a4cf123456789a01",
+        "deviceClassEnabled": "CLASS_A",
+        "tags": {}
+    },
+    "devAddr": "01fa2344",
+    "adr": true,
+    "dr": 5,
+    "fCnt": 2,
+    "fPort": 2,
+    "confirmed": false,
+    "data": "AQsCNtTv/8kI+gLX/////////wA=",
+    "object": {
+        "gps_fix": 1,
+        "drone_tof_cm": -1,
+        "satellites": 11,
+        "altitude_m": 727,
+        "drone_time_s": -1,
+        "latitude": 37.147887,
+        "drone_sdk_active": 0,
+        "drone_sdk_raw": 0,
+        "longitude": -3.602182,
+        "drone_speed": -1,
+        "gps_fix_raw": 1,
+        "drone_battery_percent": 255
+    },
+    "rxInfo": [
+        {
+            "gatewayId": "0016c001f10f6dfa",
+            "uplinkId": 33850,
+            "nsTime": "2026-05-23T09:33:54.070025238+00:00",
+            "rssi": -106,
+            "snr": -7,
+            "channel": 3,
+            "location": {},
+            "context": "rA+BBA==",
+            "crcStatus": "CRC_OK"
+        }
+    ],
+    "txInfo": {
+        "frequency": 867100000,
+        "modulation": {
+            "lora": {
+                "bandwidth": 125000,
+                "spreadingFactor": 7,
+                "codeRate": "CR_4_5"
+            }
+        }
+    },
+    "regionConfigId": "eu868"
+}
+```
+
 ![Captura de la interfaz de ChirpStack mostrando el registro de eventos del dispositivo Heltec. Se aprecian las tramas de datos "up" junto con la decodificación exitosa en formato JSON de las métricas del dron (batería a 255 y otros a -1 indicando desconexión) y estado GNSS dentro del campo object.](../images/chirpstack_test_gnss_events.png)
 
 ## 8. Integración con InfluxDB
@@ -125,6 +191,35 @@ El panel de control (*dashboard*) diseñado en Grafana centraliza la telemetría
 2. **Integridad de Red:** Monitorización del contador `fCnt`. Un crecimiento lineal asegura la correcta recepción; saltos o estancamientos evidencian pérdidas de paquetes o reinicios del nodo.
 3. **Telemetría UAV:** Paneles de tipo *Gauge* y gráficas temporales que muestran el nivel de batería, velocidad instantánea, altitud relativa (ToF) y tiempo de vuelo.
 4. **Posicionamiento y Cobertura:** Un mapa interactivo ubica cada transmisión. El panel cruza las coordenadas geográficas con la intensidad de la señal (`RSSI`). El sistema está configurado de modo que los valores centinela de latitud/longitud en `0` son filtrados por las consultas de Grafana, evitando plotear puntos erróneos (como la coordenada 0,0 en el Golfo de Guinea) y manteniendo la pureza cartográfica del mapa de cobertura.
+
+### 9.1. Evolución de la Arquitectura de Visualización (Sesión 23/05/2026)
+
+Con el fin de soportar escenarios complejos de múltiples rescatistas y telemetría avanzada, el sistema de visualización ha evolucionado desde un único cuadro de mando genérico hacia un ecosistema de **tres dashboards específicos**:
+
+1. **Dashboard Especializado Mota Heltec + Dron**:
+   Este panel está optimizado para auditar en tiempo real la telemetría combinada de la mota principal Heltec montada a bordo del UAV. Muestra en paralelo el estado físico del dron (batería, altímetro ToF) junto con los parámetros RF y las coordenadas de vuelo.
+   
+   *   **Evolución temporal del vuelo**: Las capturas tomadas a las **11:44:12** y a las **12:53:34** reflejan la persistencia histórica de las series temporales a lo largo de una sesión continua, permitiendo a los operadores verificar la tendencia de consumo de batería de la aeronave y la fluctuación de los enlaces de radio.
+   
+   ![Captura del Dashboard Especializado Heltec a mitad de la prueba (11:44:12).](../images/grafana_heltec_uav_dashboard_1144.png)
+   
+   ![Captura del Dashboard Especializado Heltec al finalizar la prueba (12:53:34) mostrando la acumulación de datos históricos.](../images/grafana_heltec_uav_dashboard_1253.png)
+
+2. **Dashboard Individual Mota LinkOne**:
+   Corresponde al panel exclusivo para el rastreador de emergencia secundario `LinkOne 13` (mota táctica alternativa). Permite aislar su comportamiento de red (`fCnt`, RSSI, SNR) y evaluar su mapa cartográfico de manera independiente de la mota del dron.
+   
+   ![Captura del Dashboard Individual de la mota LinkOne 13 (12:55:15).](../images/grafana_linkone_individual_dashboard.png)
+
+3. **Dashboard Conjunto Multi-Nodo (Integrador del Sistema)**:
+   Es el panel maestro de control de misión ("TFG Conjunto - Heltec, LinkOne, Dron"). Permite una supervisión unificada al integrar las coordenadas en mapa de **ambos dispositivos rastreadores** simultáneamente, junto con la telemetría en tiempo real del dron. 
+   
+   Esta visualización combinada es idónea para coordinar operaciones de rescate complejas, donde se puede contrastar la posición del UAV de búsqueda aérea en relación con los rescatistas en tierra equipados con trackers.
+   
+   ![Captura del Dashboard Conjunto mostrando el posicionamiento multi-nodo inicial (12:52:51).](../images/grafana_conjunto_dashboard_1252.png)
+   
+   ![Captura del Dashboard Conjunto detallando el avance de las trayectorias de ambos nodos en el mapa (12:55:44).](../images/grafana_conjunto_dashboard_1255.png)
+
+---
 
 ![Captura del panel principal diseñado en Grafana. Muestra en tiempo real la evolución de la calidad del enlace radio (gráficas temporales de RSSI y SNR), la progresión del contador de paquetes (fCnt) y los indicadores (*gauges* y gráficas) de la telemetría del UAV: batería restante (%), altitud relativa ToF (cm), velocidad (cm/s) y tiempo de vuelo (s).](../images/grafana_dashboard_telemetry.jpg)
 
@@ -145,21 +240,23 @@ La implementación demuestra la viabilidad de utilizar LoRaWAN en escenarios de 
 - **Decodificación:** Las tramas binarias se transformaron en variables físicas congruentes en la infraestructura de la nube, validando la solidez de la codificación y de las temporizaciones de las ventanas de escucha asíncronas.
 - **Limitaciones operativas:** Se evidenció que la carencia de *fix* GPS se gestiona mediante el envío de valores centinela (`0`); el *payload* se transmite igualmente permitiendo analizar la cobertura LoRaWAN (RSSI, SNR), aunque se pierda el posicionamiento. De la misma forma, si el dron pierde la conexión de la red local con la mota, la mota continúa alertando sobre su estado emitiendo banderas de error específicas (batería a `255`, resto a `-1`).
 
----
+### 11.1. Análisis Crítico de la Sesión de Pruebas (23 de Mayo de 2026)
 
-## Recomendaciones para la redacción final de la memoria
+Los datos reales recopilados durante la sesión de pruebas del 23 de mayo de 2026 validan empíricamente el diseño e integración del sistema multi-mota y UAV:
 
-> **Sugerencia de estructura para la memoria:** 
-> - **Capítulo 5. Implementación:** Aquí deben incluirse los apartados 1 al 9, priorizando los diagramas de arquitectura, fragmentos del *payload* e integración ESP32.
-> - **Capítulo 6. Pruebas y Resultados:** Aquí encajan los apartados 10 y 11, adjuntando la captura del Dashboard (figura de Grafana), métricas de RSSI, trazas del *JoinAccept* y análisis de la desconexión del modo sleep.
+1.  **Robustez en Condiciones de Margen de Enlace Crítico**:
+    Como se observa en el registro `chirpstack_uplink_log.json`, el paquete con identificador único `cabec381-1712-4a0e-ac92-8bc0d8cc5660` se recibió exitosamente a pesar de presentar una potencia de señal extremadamente baja (**RSSI de -106 dBm**) y una relación señal-ruido negativa (**SNR de -7 dB**). Esto ratifica que la tecnología LoRa, operando con un Factor de Ensanchamiento SF7 a 867.1 MHz, posee la capacidad de decodificar señales por debajo del piso de ruido, garantizando la viabilidad del enlace incluso en las fases en las que el UAV realiza giros o vuela en el límite de la línea de vista.
 
-### Recomendación de Figuras y Tablas
-1. **Diagrama de Bloques / Arquitectura:** Crear una figura visual mostrando el flujo: UAV $\rightarrow$ ESP32 $\rightarrow$ Heltec $\rightarrow$ Gateway $\rightarrow$ ChirpStack $\rightarrow$ InfluxDB $\rightarrow$ Grafana.
-2. **Tabla del Payload:** Trasladar la explicación del "Payload Ampliado (20 bytes)" a una tabla formal en LaTeX indicando Byte, Tipo de Dato, Rango y Función.
-3. **Captura del Dashboard:** Incluir la captura `Grafana.png` en los Resultados, destacando cómo el RSSI decae según se aleja el dron y cómo la telemetría se recibe en tiempo real.
-4. **Capturas de ChirpStack:** Mostrar una figura con el flujo `JoinRequest` $\rightarrow$ `JoinAccept` $\rightarrow$ `UnconfirmedDataUp`.
+2.  **Validación del Comportamiento ante Desconexión Local (Tolerancia a Fallos)**:
+    Durante esta sesión se forzó la desconexión física de la red WiFi del dron. La mota Heltec, siguiendo la máquina de estados, no detuvo su transmisión LoRaWAN; por el contrario, rellenó el byte de batería con el valor especial `255` y los campos de 16 bits (ToF, velocidad, tiempo) con `-1` (bruto `0xFFFF`). 
+    
+    El Network Server ChirpStack decodificó con precisión este payload ampliado de 20 bytes (traduciendo los valores a JSON), e InfluxDB los almacenó. Como consecuencia, en los Dashboards de Grafana (`grafana_heltec_uav_dashboard_1253.png` y `grafana_conjunto_dashboard_1255.png`), los indicadores del dron se marcaron de forma visual como inactivos o en alerta, pero sin provocar excepciones de visualización ni pérdida de los datos de cobertura de radio.
 
-### 14. Trabajo futuro
+3.  **Concurrencia Multi-Mota en Escenario Operativo**:
+    La adición simultánea del nodo rastreador `LinkOne 13` y la mota Heltec operando a bordo del UAV valida la capacidad del gateway y del servidor de ChirpStack para gestionar el direccionamiento concurrente. Los paquetes se deduplicaron de forma independiente basándose en sus correspondientes `DevAddr` (`01fa2344` en el caso de la Heltec) y claves de cifrado de red, poblando de manera limpia y sin interferencias el Dashboard Conjunto.
+
+## 12. Trabajo futuro
+
 Como extensión del proyecto para la sección de "Trabajo Futuro / Conclusiones", se pueden contemplar los siguientes puntos:
 1. Implementación de una cola FIFO en la placa Heltec para almacenar mediciones del UAV si el envío LoRaWAN falla (pérdida de cobertura).
 2. Transición del enlace ESP32 $\leftrightarrow$ Heltec de WiFi UDP a un protocolo de radio corto más eficiente como BLE (Bluetooth Low Energy).

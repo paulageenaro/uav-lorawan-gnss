@@ -70,4 +70,4 @@ La Heltec Wireless Tracker envía un payload binario **propietario de 20 bytes**
 
 ---
 
-*TFG — Diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia*
+*Diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia*

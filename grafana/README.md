@@ -1,6 +1,6 @@
 # Carpeta `grafana/` — Dashboards movidos a `dashboards/`
 
-> ⚠️ **Esta carpeta ha quedado en desuso.** Todos los dashboards de Grafana del TFG están ahora en la carpeta [`../dashboards/`](../dashboards/).
+> ⚠️ **Esta carpeta ha quedado en desuso.** Todos los dashboards de Grafana de este proyecto están ahora en la carpeta [`../dashboards/`](../dashboards/).
 
 ## Dashboards disponibles en `dashboards/`
 

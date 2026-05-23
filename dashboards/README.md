@@ -1,10 +1,10 @@
-# Dashboards Grafana del TFG LoRaWAN-UAV
+# Dashboards Grafana de UAV-LoRaWAN
 
 ## Descripción general
 
-Esta carpeta contiene los dashboards de Grafana utilizados en el Trabajo de Fin de Grado (TFG) sobre el diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia. Los dashboards permiten visualizar en tiempo real la información almacenada en InfluxDB, procedente de ChirpStack, que actúa como servidor de red LoRaWAN y reenvía los datos de los dispositivos al bucket `lorawan-gps-uav` de InfluxDB.
+Esta carpeta contiene los dashboards de Grafana utilizados en el sistema de monitorización y localización de una red UAV basada en LoRaWAN para entornos de emergencia. Los dashboards permiten visualizar en tiempo real la información almacenada en InfluxDB, procedente de ChirpStack, que actúa como servidor de red LoRaWAN y reenvía los datos de los dispositivos al bucket `lorawan-gps-uav` de InfluxDB.
 
-El sistema utiliza dos motas LoRaWAN con roles diferenciados dentro del TFG, y los dashboards están organizados para reflejar esta distinción.
+El sistema utiliza dos motas LoRaWAN con roles diferenciados dentro de la arquitectura, y los dashboards están organizados para reflejar esta distinción.
 
 ---
 
@@ -16,7 +16,7 @@ El sistema utiliza dos motas LoRaWAN con roles diferenciados dentro del TFG, y l
 
 Este dashboard centraliza todos los datos de la mota **LINK ONE 13** (DevEUI: `000000000000100d`).
 
-**Finalidad dentro del TFG:**
+**Finalidad en el Sistema:**
 Se utiliza como **mota de apoyo para validar la visualización geográfica en Grafana**. A diferencia de la Heltec, las coordenadas GNSS de LINK ONE (latitud, longitud y geohash) se almacenan correctamente en InfluxDB, lo que permite representar su posición en el mapa de Grafana. Este dashboard valida que el flujo completo ChirpStack → InfluxDB → Grafana funciona correctamente para los datos GNSS.
 
 **Paneles incluidos:**
@@ -44,9 +44,9 @@ LINK ONE 13 utiliza el codec **Cayenne LPP** (Low Power Payload), seleccionable 
 
 **UID:** `tfg-heltec-lorawan-dron-dashboard`
 
-Este dashboard está dedicado a la **Heltec Wireless Tracker** (DevEUI: `a4cf123456789a01`), la mota principal del sistema UAV-LoRaWAN del TFG.
+Este dashboard está dedicado a la **Heltec Wireless Tracker** (DevEUI: `a4cf123456789a01`), la mota principal del sistema UAV-LoRaWAN.
 
-**Finalidad dentro del TFG:**
+**Finalidad en el Sistema:**
 Se utiliza para analizar la mota principal, que es la encargada de recibir y transmitir por LoRaWAN tanto los datos GNSS del propio dispositivo como las métricas del dron (batería, distancia ToF, velocidad, tiempo de vuelo y estado del SDK). Permite evaluar la calidad del enlace radio (RSSI, SNR, fCnt) y el comportamiento de los sensores integrados.
 
 **Paneles incluidos:**
@@ -71,7 +71,7 @@ Se utiliza para analizar la mota principal, que es la encargada de recibir y tra
 
 Este dashboard ofrece una visión global de ambas motas y de las métricas del dron en una única interfaz de monitorización.
 
-**Finalidad dentro del TFG:**
+**Finalidad en el Sistema:**
 Permite monitorizar el sistema completo durante las sesiones de prueba, comparando el comportamiento de los dos dispositivos LoRaWAN y verificando que las métricas del dron se están recibiendo correctamente a través de la Heltec. Es especialmente útil para detectar diferencias en la calidad del enlace entre dispositivos y para tener una visión de conjunto del sistema UAV-LoRaWAN.
 
 **Paneles incluidos:**
@@ -109,7 +109,7 @@ Al importar los dashboards, se deben revisar las siguientes variables:
 
 ## Configuración de codecs por dispositivo
 
-Cada dispositivo LoRaWAN del TFG utiliza un codec diferente en ChirpStack para decodificar el payload binario:
+Cada dispositivo LoRaWAN del sistema utiliza un codec diferente en ChirpStack para decodificar el payload binario:
 
 | Dispositivo | DevEUI | Codec en ChirpStack | Archivo |
 |---|---|---|---|
@@ -139,13 +139,13 @@ LINK ONE 13 utiliza el formato estándar **Cayenne LPP** (Low Power Payload). En
 
 ---
 
-## Interpretación de los dashboards en el TFG
+## Interpretación de los Dashboards y Resultados
 
 ### Heltec Wireless Tracker — Mota principal
 La Heltec es el dispositivo central del sistema UAV-LoRaWAN. Su función es transmitir por LoRaWAN tanto los datos de posicionamiento GNSS como las métricas de telemetría del dron (batería, altitud por ToF, velocidad, tiempo de vuelo y estado del SDK). El dashboard de Heltec permite validar la comunicación LoRaWAN extremo a extremo y analizar el comportamiento del sistema en condiciones reales de vuelo.
 
 ### LINK ONE 13 — Mota de apoyo
-LINK ONE se utiliza como dispositivo de apoyo para validar la visualización geográfica en Grafana. Dado que sus coordenadas GNSS se almacenan correctamente en InfluxDB, permite demostrar que el mapa de cobertura funciona correctamente cuando los datos de posición están disponibles. Esto facilita la interpretación de los resultados del TFG: si el mapa funciona para LINK ONE pero no para Heltec, el problema es específico de la cadena de procesamiento de la Heltec (payload decoder o integración), no de Grafana.
+LINK ONE se utiliza como dispositivo de apoyo para validar la visualización geográfica en Grafana. Dado que sus coordenadas GNSS se almacenan correctamente en InfluxDB, permite demostrar que el mapa de cobertura funciona correctamente cuando los datos de posición están disponibles. Esto facilita la depuración del sistema: si el mapa funciona para LINK ONE pero no para Heltec, el problema es específico de la cadena de procesamiento de la Heltec (payload decoder o integración), no de Grafana.
 
 ### Dashboard conjunto — Monitorización global
 El dashboard conjunto permite tener una visión del sistema completo durante las sesiones de prueba, facilitando la comparación simultánea de los dos dispositivos. Es especialmente útil para detectar diferencias en la calidad del enlace radio y para verificar en tiempo real que los datos del dron se están recibiendo correctamente.
@@ -192,4 +192,4 @@ dashboards/
 
 ---
 
-*TFG — Diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia*
+*Diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia*

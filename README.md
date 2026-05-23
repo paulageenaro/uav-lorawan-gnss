@@ -1,6 +1,6 @@
 # UAV LoRaWAN GNSS Node
 
-Este repositorio contiene la implementación práctica del Trabajo Fin de Grado centrado en el **diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia**.
+Este repositorio contiene la implementación práctica centrada en el **diseño y evaluación de una red UAV basada en LoRaWAN para entornos de emergencia**.
 
 El objetivo de este proyecto es demostrar la viabilidad de transportar un nodo final autónomo (mota) con un Vehículo Aéreo No Tripulado (UAV/dron), capturar su ubicación mediante un módulo GNSS y enviarla periódicamente utilizando tecnología LoRaWAN.
 

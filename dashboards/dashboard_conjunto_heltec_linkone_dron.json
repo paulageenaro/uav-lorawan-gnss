@@ -18,416 +18,791 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 32,
   "links": [],
   "panels": [
     {
-      "type": "text",
-      "title": "ℹ️ Dashboard Conjunto — Heltec + LINK ONE + Dron",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
         "y": 0
       },
+      "id": 1,
       "options": {
-        "mode": "markdown",
-        "content": "## Dashboard Conjunto: Heltec Wireless Tracker + LINK ONE 13 + Métricas del dron\n\nEste dashboard integra los datos disponibles de **ambas motas LoRaWAN** del TFG y las **métricas del dron** recibidas a través de la Heltec. Permite una visión global del sistema UAV-LoRaWAN durante las sesiones de prueba.\n\n> 📌 **Importante:** Los paneles de cada mota son independientes y se diferencian por código de color (**Heltec en Naranja/Ámbar**, **LINK ONE en Azul**). El mapa GNSS central es **multi-capa**, superponiendo las trayectorias de ambas motas en tiempo real y mitigando la visualización de posiciones erróneas sin fix GPS."
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## Dashboard Conjunto: Heltec Wireless Tracker + LINK ONE 13 + Métricas del dron\n\nEste dashboard integra los datos disponibles de **ambas motas LoRaWAN** del TFG y las **métricas del dron** recibidas a través de la Heltec. Permite una visión global del sistema UAV-LoRaWAN durante las sesiones de prueba.\n\n> 📌 **Importante:** Los paneles de cada mota son independientes y se diferencian por código de color (**Heltec en Naranja/Ámbar**, **LINK ONE en Azul**). El mapa GNSS central es **multi-capa**, superponiendo las trayectorias de ambas motas en tiempo real y mitigando la visualización de posiciones erróneas sin fix GPS.",
+        "mode": "markdown"
       },
-      "id": 1
+      "pluginVersion": "11.6.1",
+      "title": "ℹ️ Dashboard Conjunto — Heltec + LINK ONE + Dron",
+      "type": "text"
     },
     {
-      "type": "row",
-      "title": "📡 Calidad LoRaWAN — Heltec Wireless Tracker",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 4
       },
-      "collapsed": false,
-      "id": 2
+      "id": 2,
+      "panels": [],
+      "title": "📡 Calidad LoRaWAN — Heltec Wireless Tracker",
+      "type": "row"
     },
     {
-      "type": "timeseries",
-      "title": "RSSI — Heltec (dBm)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
       "description": "Potencia de señal recibida por el gateway desde la Heltec Wireless Tracker (DevEUI: a4cf123456789a01).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#F59E0B",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 0,
         "y": 5
       },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"rssi\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"rssi_heltec\")",
+          "refId": "A"
+        }
+      ],
+      "title": "RSSI — Heltec (dBm)",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"rssi\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"rssi_heltec\")"
-        }
-      ],
+      "description": "Relación señal/ruido del enlace LoRaWAN de la Heltec (DevEUI: a4cf123456789a01).",
       "fieldConfig": {
         "defaults": {
-          "unit": "dBm",
           "color": {
             "fixedColor": "#F59E0B",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dB"
         },
         "overrides": []
       },
-      "id": 3
-    },
-    {
-      "type": "timeseries",
-      "title": "SNR — Heltec (dB)",
-      "description": "Relación señal/ruido del enlace LoRaWAN de la Heltec (DevEUI: a4cf123456789a01).",
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 8,
         "y": 5
       },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"snr\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"snr_heltec\")",
+          "refId": "A"
+        }
+      ],
+      "title": "SNR — Heltec (dB)",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"snr\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"snr_heltec\")"
-        }
-      ],
+      "description": "Frame counter de la Heltec. Permite detectar pérdidas de paquetes LoRaWAN.",
       "fieldConfig": {
         "defaults": {
-          "unit": "dB",
           "color": {
             "fixedColor": "#F59E0B",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
-      "id": 4
-    },
-    {
-      "type": "timeseries",
-      "title": "fCnt — Heltec",
-      "description": "Frame counter de la Heltec. Permite detectar pérdidas de paquetes LoRaWAN.",
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 16,
         "y": 5
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"f_cnt\")\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"fcnt_heltec\")"
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"f_cnt\")\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"fcnt_heltec\")",
+          "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "fixedColor": "#F59E0B",
-            "mode": "fixed"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
-            "fillOpacity": 12,
-            "showPoints": "auto",
-            "lineWidth": 2
-          }
-        },
-        "overrides": []
-      },
-      "id": 5
+      "title": "fCnt — Heltec",
+      "type": "timeseries"
     },
     {
-      "type": "row",
-      "title": "📡 Calidad LoRaWAN — LINK ONE 13",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 12
       },
-      "collapsed": false,
-      "id": 6
+      "id": 6,
+      "panels": [],
+      "title": "📡 Calidad LoRaWAN — LINK ONE 13",
+      "type": "row"
     },
     {
-      "type": "timeseries",
-      "title": "RSSI — LINK ONE (dBm)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "efl8qd7iuew3kb"
+      },
       "description": "Potencia de señal recibida por el gateway desde LINK ONE (DevEUI: 000000000000100d).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#3B82F6",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 0,
         "y": 13
       },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "efl8qd7iuew3kb"
+          },
+          "query": "from(bucket: \"lorawan-gps-uav\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"rssi\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"rssi_linkone\")",
+          "refId": "A"
+        }
+      ],
+      "title": "RSSI — LINK ONE (dBm)",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"rssi\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"rssi_linkone\")"
-        }
-      ],
+      "description": "Relación señal/ruido del enlace LoRaWAN de LINK ONE (DevEUI: 000000000000100d).",
       "fieldConfig": {
         "defaults": {
-          "unit": "dBm",
           "color": {
             "fixedColor": "#3B82F6",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dB"
         },
         "overrides": []
       },
-      "id": 7
-    },
-    {
-      "type": "timeseries",
-      "title": "SNR — LINK ONE (dB)",
-      "description": "Relación señal/ruido del enlace LoRaWAN de LINK ONE (DevEUI: 000000000000100d).",
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 8,
         "y": 13
       },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"snr\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"snr_linkone\")",
+          "refId": "A"
+        }
+      ],
+      "title": "SNR — LINK ONE (dB)",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"snr\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"snr_linkone\")"
-        }
-      ],
+      "description": "Frame counter de LINK ONE. Permite detectar pérdidas de paquetes LoRaWAN.",
       "fieldConfig": {
         "defaults": {
-          "unit": "dB",
           "color": {
             "fixedColor": "#3B82F6",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
-      "id": 8
-    },
-    {
-      "type": "timeseries",
-      "title": "fCnt — LINK ONE",
-      "description": "Frame counter de LINK ONE. Permite detectar pérdidas de paquetes LoRaWAN.",
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 16,
         "y": 13
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"f_cnt\")\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"fcnt_linkone\")"
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_uplink\")\n  |> filter(fn: (r) => r[\"_field\"] == \"f_cnt\")\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"fcnt_linkone\")",
+          "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "fixedColor": "#3B82F6",
-            "mode": "fixed"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
-            "fillOpacity": 12,
-            "showPoints": "auto",
-            "lineWidth": 2
-          }
-        },
-        "overrides": []
-      },
-      "id": 9
+      "title": "fCnt — LINK ONE",
+      "type": "timeseries"
     },
     {
-      "type": "row",
-      "title": "🗺️ Localización GNSS Multi-capa — Heltec + LINK ONE",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 20
       },
-      "collapsed": false,
-      "id": 10
+      "id": 10,
+      "panels": [],
+      "title": "🗺️ Localización GNSS Multi-capa — Heltec + LINK ONE",
+      "type": "row"
     },
     {
-      "type": "geomap",
-      "title": "Mapa GNSS — Heltec & LINK ONE (Trayectoria)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "efl8qd7iuew3kb"
+      },
       "description": "Trayectorias geográficas en tiempo real superpuestas. La capa azul muestra la mota LINK ONE 13 (Cayenne LPP) y la capa naranja muestra la mota Heltec (con filtrado activo del centinela 0.0 cuando no tiene fix GPS).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 14,
         "w": 24,
         "x": 0,
         "y": 21
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "import \"date\"\n\nfrom(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => \n    r[\"_measurement\"] == \"device_uplink\" or \n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_longitude\"\n  )\n  |> filter(fn: (r) => \n    r[\"_field\"] == \"snr\" or \n    r[\"_field\"] == \"rssi\" or \n    r[\"_field\"] == \"latitude\" or \n    r[\"_field\"] == \"longitude\" or \n    r[\"_field\"] == \"value\"\n  )\n  |> map(fn: (r) => ({\n    r with\n    _time: date.truncate(t: r._time, unit: 1s),\n    _value: float(v: r._value)\n  }))\n  |> group()\n  |> map(fn: (r) => ({\n    r with\n    _field: if r._measurement == \"device_frmpayload_data_gpsLocation_4_latitude\" then \"latitude\"\n            else if r._measurement == \"device_frmpayload_data_gpsLocation_4_longitude\" then \"longitude\"\n            else r._field\n  }))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => exists r.latitude and exists r.longitude)\n  |> keep(columns: [\"_time\", \"latitude\", \"longitude\", \"rssi\", \"snr\"])"
-        },
-        {
-          "refId": "B",
-          "query": "import \"date\"\n\nfrom(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => \n    r[\"_measurement\"] == \"device_uplink\" or \n    r[\"_measurement\"] == \"device_frmpayload_data_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_longitude\"\n  )\n  |> filter(fn: (r) => \n    r[\"_field\"] == \"snr\" or \n    r[\"_field\"] == \"rssi\" or \n    r[\"_field\"] == \"latitude\" or \n    r[\"_field\"] == \"longitude\" or \n    r[\"_field\"] == \"value\"\n  )\n  |> map(fn: (r) => ({\n    r with\n    _time: date.truncate(t: r._time, unit: 1s),\n    _value: float(v: r._value)\n  }))\n  |> group()\n  |> map(fn: (r) => ({\n    r with\n    _field: if r._measurement == \"device_frmpayload_data_latitude\" then \"latitude\"\n            else if r._measurement == \"device_frmpayload_data_longitude\" then \"longitude\"\n            else r._field\n  }))\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => exists r.latitude and exists r.longitude and r.latitude != 0.0 and r.longitude != 0.0)\n  |> keep(columns: [\"_time\", \"latitude\", \"longitude\", \"rssi\", \"snr\"])"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none"
-        },
-        "overrides": []
-      },
+      "id": 11,
       "options": {
-        "view": {
-          "id": "coords",
-          "lat": 37.1773,
-          "lon": -3.5986,
-          "zoom": 13
-        },
         "basemap": {
-          "type": "default",
+          "config": {},
           "name": "Layer 0",
-          "config": {}
+          "type": "default"
         },
         "controls": {
-          "showZoom": true,
           "mouseWheelZoom": true,
           "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
           "showScale": true,
-          "showDebug": false
-        },
-        "tooltip": {
-          "mode": "details"
+          "showZoom": true
         },
         "layers": [
           {
-            "type": "markers",
-            "name": "LINK ONE — Posición GNSS",
-            "location": {
-              "mode": "coords",
-              "latitude": "latitude_linkone",
-              "longitude": "longitude_linkone"
-            },
             "config": {
               "showLegend": true,
               "style": {
-                "size": {
-                  "fixed": 10,
-                  "min": 5,
-                  "max": 20
-                },
                 "color": {
                   "fixed": "#3B82F6"
                 },
                 "opacity": 0.9,
+                "size": {
+                  "fixed": 10,
+                  "max": 20,
+                  "min": 5
+                },
                 "symbol": {
                   "fixed": "img/icons/marker/circle.svg",
                   "mode": "fixed"
                 }
               }
-            }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "A"
+            },
+            "location": {
+              "latitude": "latitude",
+              "longitude": "longitude",
+              "mode": "coords"
+            },
+            "name": "LINK ONE — Posición GNSS",
+            "type": "markers"
           },
           {
-            "type": "markers",
-            "name": "Heltec — Posición GNSS",
-            "location": {
-              "mode": "coords",
-              "latitude": "latitude_heltec",
-              "longitude": "longitude_heltec"
-            },
             "config": {
               "showLegend": true,
               "style": {
-                "size": {
-                  "fixed": 10,
-                  "min": 5,
-                  "max": 20
-                },
                 "color": {
                   "fixed": "#F59E0B"
                 },
                 "opacity": 0.9,
+                "size": {
+                  "fixed": 10,
+                  "max": 20,
+                  "min": 5
+                },
                 "symbol": {
                   "fixed": "img/icons/marker/circle.svg",
                   "mode": "fixed"
                 }
               }
-            }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "location": {
+              "latitude": "latitude",
+              "longitude": "longitude",
+              "mode": "coords"
+            },
+            "name": "Heltec — Posición GNSS",
+            "type": "markers"
           }
-        ]
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "coords",
+          "lat": 37.1773,
+          "lon": -3.5986,
+          "zoom": 13
+        }
       },
-      "id": 11
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "efl8qd7iuew3kb"
+          },
+          "query": "import \"date\"\n\nfrom(bucket: \"lorawan-gps-uav\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => \n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_longitude\" or\n    r[\"_measurement\"] == \"device_uplink\"\n  )\n  |> filter(fn: (r) => \n    r[\"_field\"] == \"latitude\" or \n    r[\"_field\"] == \"longitude\" or \n    r[\"_field\"] == \"value\"\n  )\n  |> map(fn: (r) => ({\n    r with\n    _time: date.truncate(t: r._time, unit: 1s),\n    _value: float(v: r._value)\n  }))\n  |> group()\n  |> map(fn: (r) => ({\n    r with\n    _field: if r._measurement == \"device_frmpayload_data_gpsLocation_4_latitude\" then \"latitude\"\n            else if r._measurement == \"device_frmpayload_data_gpsLocation_4_longitude\" then \"longitude\"\n            else r._field\n  }))\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => exists r.latitude and exists r.longitude)\n  |> filter(fn: (r) => r.latitude != 0.0 and r.longitude != 0.0)\n  |> keep(columns: [\"_time\", \"latitude\", \"longitude\", \"dev_eui\", \"device_name\"])",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "efl8qd7iuew3kb"
+          },
+          "query": "base =\n  from(bucket: \"lorawan-gps-uav\")\n    |> range(start: -7d)\n    |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n    |> filter(fn: (r) =>\n      r[\"_field\"] == \"latitude\" or\n      r[\"_field\"] == \"longitude\" or\n      r[\"_measurement\"] == \"device_frmpayload_data_altitude_m\"\n    )\n    |> filter(fn: (r) =>\n      r[\"_field\"] == \"latitude\" or\n      r[\"_field\"] == \"longitude\" or\n      r[\"_field\"] == \"value\"\n    )\n    |> map(fn: (r) => ({\n      r with\n      _field: if r[\"_measurement\"] == \"device_frmpayload_data_altitude_m\" then \"altitude_m\" else r[\"_field\"],\n      _value: float(v: r._value)\n    }))\n    |> filter(fn: (r) =>\n      r[\"_field\"] == \"altitude_m\" or r[\"_value\"] != 0.0\n    )\n\nbase\n  |> group(columns: [\"_field\"])\n  |> last()\n  |> group()\n  |> pivot(rowKey: [\"dev_eui\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => exists r.latitude and exists r.longitude)\n  |> map(fn: (r) => ({\n    r with\n    _time: now()\n  }))\n  |> keep(columns: [\"_time\", \"latitude\", \"longitude\", \"altitude_m\", \"dev_eui\", \"device_name\"])",
+          "refId": "B"
+        }
+      ],
+      "title": "Mapa GNSS — Heltec & LINK ONE (Trayectoria)",
+      "type": "geomap"
     },
     {
-      "type": "row",
-      "title": "🛰️ Coordenadas y Altitud GNSS — LINK ONE 13",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 35
       },
-      "collapsed": false,
-      "id": 12
+      "id": 12,
+      "panels": [],
+      "title": "🛰️ Coordenadas y Altitud GNSS — LINK ONE 13",
+      "type": "row"
     },
     {
       "datasource": {
@@ -439,6 +814,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -448,8 +824,7 @@
               }
             ]
           },
-          "unit": "none",
-          "decimals": 0
+          "unit": "none"
         },
         "overrides": []
       },
@@ -478,7 +853,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -495,33 +870,34 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "efl8qd7iuew3kb"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "mappings": [
             {
-              "type": "value",
               "options": {
                 "0": {
-                  "text": "GPS no disponible / coords prueba",
                   "color": "orange",
-                  "index": 0
+                  "index": 0,
+                  "text": "GPS no disponible / coords prueba"
                 }
-              }
+              },
+              "type": "value"
             },
             {
-              "type": "value",
               "options": {
                 "1": {
-                  "text": "GPS real disponible",
                   "color": "green",
-                  "index": 1
+                  "index": 1,
+                  "text": "GPS real disponible"
                 }
-              }
+              },
+              "type": "value"
             }
           ],
           "thresholds": {
@@ -535,8 +911,7 @@
                 "value": 1
               }
             ]
-          },
-          "decimals": 0
+          }
         },
         "overrides": []
       },
@@ -565,14 +940,14 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "efl8qd7iuew3kb"
           },
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_digitalOutput_5\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 1)\n  |> keep(columns: [\"_value\"])\n  |> yield(name: \"last_gps_available\")",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_digitalOutput_5\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 1)\n  |> keep(columns: [\"_value\"])\n  |> yield(name: \"last_gps_available\")\n  ",
           "refId": "A"
         }
       ],
@@ -580,15 +955,6 @@
       "type": "stat"
     },
     {
-      "type": "stat",
-      "title": "Última Latitud — LINK ONE",
-      "id": 15,
-      "gridPos": {
-        "h": 5,
-        "w": 5,
-        "x": 8,
-        "y": 36
-      },
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
@@ -599,7 +965,7 @@
             "mode": "thresholds"
           },
           "decimals": 6,
-          "unit": "degree",
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -607,25 +973,36 @@
                 "color": "blue"
               }
             ]
-          }
+          },
+          "unit": "degree"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 8,
+        "y": 36
+      },
+      "id": 15,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "textMode": "auto",
-        "wideLayout": true,
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
           "fields": "",
           "values": false
-        }
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -635,18 +1012,11 @@
           "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => \n    (r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\" and r[\"_field\"] == \"latitude\") or\n    (r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_latitude\" and r[\"_field\"] == \"value\")\n  )\n  |> last()\n  |> keep(columns: [\"_value\"])\n  |> yield(name: \"lat_last\")",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Última Latitud — LINK ONE",
+      "type": "stat"
     },
     {
-      "type": "stat",
-      "title": "Última Longitud — LINK ONE",
-      "id": 16,
-      "gridPos": {
-        "h": 5,
-        "w": 5,
-        "x": 13,
-        "y": 36
-      },
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
@@ -657,7 +1027,7 @@
             "mode": "thresholds"
           },
           "decimals": 6,
-          "unit": "degree",
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -665,25 +1035,36 @@
                 "color": "blue"
               }
             ]
-          }
+          },
+          "unit": "degree"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 13,
+        "y": 36
+      },
+      "id": 16,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "textMode": "auto",
-        "wideLayout": true,
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
           "fields": "",
           "values": false
-        }
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -693,18 +1074,11 @@
           "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => \n    (r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\" and r[\"_field\"] == \"longitude\") or\n    (r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_longitude\" and r[\"_field\"] == \"value\")\n  )\n  |> last()\n  |> keep(columns: [\"_value\"])\n  |> yield(name: \"lon_last\")",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Última Longitud — LINK ONE",
+      "type": "stat"
     },
     {
-      "type": "stat",
-      "title": "Última Altitud — LINK ONE",
-      "id": 17,
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 18,
-        "y": 36
-      },
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
@@ -715,7 +1089,7 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "unit": "lengthm",
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -723,25 +1097,36 @@
                 "color": "blue"
               }
             ]
-          }
+          },
+          "unit": "lengthm"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 36
+      },
+      "id": 17,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "textMode": "auto",
-        "wideLayout": true,
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
           "fields": "",
           "values": false
-        }
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -751,194 +1136,354 @@
           "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) => \n    (r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_altitude\" and r[\"_field\"] == \"value\") or\n    (r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\" and r[\"_field\"] == \"altitude\")\n  )\n  |> last()\n  |> keep(columns: [\"_value\"])\n  |> yield(name: \"alt_last\")",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Última Altitud — LINK ONE",
+      "type": "stat"
     },
     {
-      "type": "row",
-      "title": "🛰️ Diagnóstico GNSS — Heltec (estado en InfluxDB)",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 41
       },
-      "collapsed": false,
-      "id": 18
+      "id": 18,
+      "panels": [],
+      "title": "🛰️ Diagnóstico GNSS — Heltec (estado en InfluxDB)",
+      "type": "row"
     },
     {
-      "type": "text",
-      "title": "⚠️ Limitación GNSS Heltec en el dashboard conjunto",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 3,
         "w": 24,
         "x": 0,
         "y": 42
       },
+      "id": 19,
       "options": {
-        "mode": "markdown",
-        "content": "> 🔧 **Decoder actualizado (20 bytes):** Con el codec activo, `latitude`, `longitude` y `altitude_m` de la Heltec **siempre se escriben en InfluxDB** (valor `0` cuando no hay fix GPS, nunca `null`). Los paneles siguientes permiten diagnosticar el estado GNSS:\n\n- **Panel con valor 0 constante** → integración funcionando, pero sin fix GNSS.\n- **Panel con valor ≠ 0** → coordenada GNSS válida.\n- **Panel vacío** → revisar el decoder en ChirpStack.\n\nEn el mapa multi-capa superior, los puntos con valor `0.0` están ocultos gracias al filtrado Flux activo."
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "> 🔧 **Decoder actualizado (20 bytes):** Con el codec activo, `latitude`, `longitude` y `altitude_m` de la Heltec **siempre se escriben en InfluxDB** (valor `0` cuando no hay fix GPS, nunca `null`). Los paneles siguientes permiten diagnosticar el estado GNSS:\n\n- **Panel con valor 0 constante** → integración funcionando, pero sin fix GNSS.\n- **Panel con valor ≠ 0** → coordenada GNSS válida.\n- **Panel vacío** → revisar el decoder en ChirpStack.\n\nEn el mapa multi-capa superior, los puntos con valor `0.0` están ocultos gracias al filtrado Flux activo.",
+        "mode": "markdown"
       },
-      "id": 19
+      "pluginVersion": "11.6.1",
+      "title": "⚠️ Limitación GNSS Heltec en el dashboard conjunto",
+      "type": "text"
     },
     {
-      "type": "timeseries",
-      "title": "Latitud GNSS — Heltec (diagnóstico)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
       "description": "Con el decoder actualizado: valor 0 = sin fix GPS (campo almacenado correctamente en InfluxDB). Valor ≠ 0 = coordenada GNSS válida. Panel vacío = revisar el decoder de 20 bytes en ChirpStack.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#F59E0B",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 6,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 0,
         "y": 45
       },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"lorawan-gps-uav\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) =>\n    r[\"_field\"] == \"latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_latitude\"\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"latitude\" or r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"lat_heltec\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Latitud GNSS — Heltec (diagnóstico)",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_latitude\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"lat_heltec_diag\")"
-        }
-      ],
+      "description": "Con el decoder actualizado: valor 0 = sin fix GPS (campo almacenado correctamente en InfluxDB). Valor ≠ 0 = coordenada GNSS válida. Panel vacío = revisar el decoder de 20 bytes en ChirpStack.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 6,
           "color": {
             "fixedColor": "#F59E0B",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 6,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
-      "id": 20
-    },
-    {
-      "type": "timeseries",
-      "title": "Longitud GNSS — Heltec (diagnóstico)",
-      "description": "Con el decoder actualizado: valor 0 = sin fix GPS (campo almacenado correctamente en InfluxDB). Valor ≠ 0 = coordenada GNSS válida. Panel vacío = revisar el decoder de 20 bytes en ChirpStack.",
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 8,
         "y": 45
       },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"lorawan-gps-uav\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) =>\n    r[\"_field\"] == \"longitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_longitude\"\n  )\n  |> filter(fn: (r) => r[\"_field\"] == \"longitude\" or r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"lon_heltec\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Longitud GNSS — Heltec (diagnóstico)",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_longitude\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"lon_heltec_diag\")"
-        }
-      ],
+      "description": "Altitud GPS en metros. Con el decoder actualizado: valor 0 = altitud no disponible o sin fix GPS (campo almacenado). Valor ≠ 0 = altitud GNSS válida.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 6,
           "color": {
             "fixedColor": "#F59E0B",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "lengthm"
         },
         "overrides": []
       },
-      "id": 21
-    },
-    {
-      "type": "timeseries",
-      "title": "Altitud — Heltec (diagnóstico)",
-      "description": "Altitud GPS en metros. Con el decoder actualizado: valor 0 = altitud no disponible o sin fix GPS (campo almacenado). Valor ≠ 0 = altitud GNSS válida.",
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 16,
         "y": 45
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_altitude_m\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"alt_heltec_diag\")"
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_altitude_m\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"alt_heltec_diag\")",
+          "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "lengthm",
-          "color": {
-            "fixedColor": "#F59E0B",
-            "mode": "fixed"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
-            "fillOpacity": 10,
-            "showPoints": "auto",
-            "lineWidth": 2
-          }
-        },
-        "overrides": []
-      },
-      "id": 22
+      "title": "Altitud — Heltec (diagnóstico)",
+      "type": "timeseries"
     },
     {
-      "type": "row",
-      "title": "🚁 Métricas del dron — Recibidas por Heltec",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 52
       },
-      "collapsed": false,
-      "id": 23
+      "id": 23,
+      "panels": [],
+      "title": "🚁 Métricas del dron — Recibidas por Heltec",
+      "type": "row"
     },
     {
-      "type": "stat",
-      "title": "Última batería dron (%)",
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 0,
-        "y": 53
-      },
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_battery_percent\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
+          "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
+                "color": "red"
               },
               {
                 "color": "yellow",
@@ -949,403 +1494,758 @@
                 "value": 50
               }
             ]
-          }
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 53
+      },
+      "id": 24,
       "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "values": false,
           "calcs": [
             "lastNotNull"
           ],
-          "fields": ""
+          "fields": "",
+          "values": false
         },
-        "orientation": "auto",
+        "showPercentChange": false,
         "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto"
+        "wideLayout": true
       },
-      "id": 24
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_battery_percent\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Última batería dron (%)",
+      "type": "stat"
     },
     {
-      "type": "stat",
-      "title": "Último ToF dron (cm)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#E0A82E",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "lengthcm"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 6,
         "y": 53
       },
+      "id": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_tof_cm\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último ToF dron (cm)",
+      "type": "stat"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_tof_cm\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthcm",
           "color": {
             "fixedColor": "#E0A82E",
             "mode": "fixed"
-          }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "cms"
         },
         "overrides": []
       },
-      "options": {
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "orientation": "auto",
-        "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto"
-      },
-      "id": 25
-    },
-    {
-      "type": "stat",
-      "title": "Última velocidad dron",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 12,
         "y": 53
       },
+      "id": 26,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_speed\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Última velocidad dron",
+      "type": "stat"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_speed\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "cms",
           "color": {
             "fixedColor": "#E0A82E",
             "mode": "fixed"
-          }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
         },
         "overrides": []
       },
-      "options": {
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "orientation": "auto",
-        "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto"
-      },
-      "id": 26
-    },
-    {
-      "type": "stat",
-      "title": "Tiempo dron (s)",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 18,
         "y": 53
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_time_s\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "color": {
-            "fixedColor": "#E0A82E",
-            "mode": "fixed"
-          }
-        },
-        "overrides": []
-      },
+      "id": 27,
       "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "values": false,
           "calcs": [
             "lastNotNull"
           ],
-          "fields": ""
+          "fields": "",
+          "values": false
         },
-        "orientation": "auto",
+        "showPercentChange": false,
         "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto"
+        "wideLayout": true
       },
-      "id": 27
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_time_s\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo dron (s)",
+      "type": "stat"
     },
     {
-      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#E0A82E",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 58
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_battery_percent\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"bat_ts\")",
+          "refId": "A"
+        }
+      ],
       "title": "Batería dron (%) — Evolución temporal",
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 58
-      },
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_battery_percent\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"bat_ts\")"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
           "color": {
             "fixedColor": "#E0A82E",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "lengthcm"
         },
         "overrides": []
       },
-      "id": 28
-    },
-    {
-      "type": "timeseries",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 58
+      },
+      "id": 29,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_tof_cm\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"tof_ts\")",
+          "refId": "A"
+        }
+      ],
       "title": "ToF dron (cm) — Evolución temporal",
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 58
-      },
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_tof_cm\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"tof_ts\")"
-        }
-      ],
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthcm",
           "color": {
             "fixedColor": "#E0A82E",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
             "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "cms"
         },
         "overrides": []
       },
-      "id": 29
-    },
-    {
-      "type": "timeseries",
-      "title": "Velocidad dron — Evolución temporal",
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
         "y": 65
       },
+      "id": 30,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_speed\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"speed_ts\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Velocidad dron — Evolución temporal",
+      "type": "timeseries"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_speed\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"speed_ts\")"
-        }
-      ],
+      "description": "Estado del SDK del dron (campo drone_sdk_raw) si disponible en InfluxDB.",
       "fieldConfig": {
         "defaults": {
-          "unit": "cms",
           "color": {
             "fixedColor": "#E0A82E",
             "mode": "fixed"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "lineInterpolation": "linear",
-            "fillOpacity": 15,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "auto",
-            "lineWidth": 2
-          }
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": []
       },
-      "id": 30
-    },
-    {
-      "type": "timeseries",
-      "title": "SDK raw dron — Evolución temporal",
-      "description": "Estado del SDK del dron (campo drone_sdk_raw) si disponible en InfluxDB.",
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 12,
         "y": 65
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+      "id": 31,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
+      "pluginVersion": "11.6.1",
       "targets": [
         {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_sdk_raw\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"sdk_ts\")"
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> filter(fn: (r) => r[\"_measurement\"] == \"device_frmpayload_data_drone_sdk_raw\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"sdk_ts\")",
+          "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "fixedColor": "#E0A82E",
-            "mode": "fixed"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "stepAfter",
-            "fillOpacity": 10,
-            "showPoints": "auto",
-            "lineWidth": 2
-          }
-        },
-        "overrides": []
-      },
-      "id": 31
+      "title": "SDK raw dron — Evolución temporal",
+      "type": "timeseries"
     },
     {
-      "type": "row",
-      "title": "📋 Tablas de diagnóstico — Últimos valores por dispositivo",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 72
       },
-      "collapsed": false,
-      "id": 32
+      "id": 32,
+      "panels": [],
+      "title": "📋 Tablas de diagnóstico — Últimos valores por dispositivo",
+      "type": "row"
     },
     {
-      "type": "table",
-      "title": "Últimos valores recibidos — Heltec (a4cf123456789a01)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
       "description": "Registros más recientes de la Heltec en InfluxDB, incluyendo métricas de dron y estado GNSS.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 0,
         "y": 73
       },
+      "id": 33,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> keep(columns: [\"_time\", \"_measurement\", \"_field\", \"_value\", \"device_name\", \"dev_eui\"])\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 80)",
+          "refId": "A"
+        }
+      ],
+      "title": "Últimos valores recibidos — Heltec (a4cf123456789a01)",
+      "type": "table"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_INFLUXDB}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"a4cf123456789a01\")\n  |> keep(columns: [\"_time\", \"_measurement\", \"_field\", \"_value\", \"device_name\", \"dev_eui\"])\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 80)"
-        }
-      ],
-      "options": {
-        "showHeader": true
-      },
+      "description": "Registros más recientes de LINK ONE en InfluxDB, incluyendo RSSI, SNR, fCnt y coordenadas GNSS decodificadas por Cayenne LPP.",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
         "overrides": []
       },
-      "id": 33
-    },
-    {
-      "type": "table",
-      "title": "Últimos valores recibidos — LINK ONE (000000000000100d)",
-      "description": "Registros más recientes de LINK ONE en InfluxDB, incluyendo RSSI, SNR, fCnt y coordenadas GNSS decodificadas por Cayenne LPP.",
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 12,
         "y": 73
       },
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_uplink\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_longitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_altitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\"\n  )\n  |> keep(columns: [\"_time\", \"_measurement\", \"_field\", \"_value\", \"device_name\", \"dev_eui\"])\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 100)"
-        }
-      ],
+      "id": 34,
       "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true
       },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"dev_eui\"] == \"000000000000100d\")\n  |> filter(fn: (r) =>\n    r[\"_measurement\"] == \"device_uplink\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_latitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_longitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_altitude\" or\n    r[\"_measurement\"] == \"device_frmpayload_data_gpsLocation_4_location\"\n  )\n  |> keep(columns: [\"_time\", \"_measurement\", \"_field\", \"_value\", \"device_name\", \"dev_eui\"])\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 100)",
+          "refId": "A"
+        }
+      ],
+      "title": "Últimos valores recibidos — LINK ONE (000000000000100d)",
+      "type": "table"
+    },
+    {
       "fieldConfig": {
         "defaults": {},
         "overrides": []
       },
-      "id": 34
-    },
-    {
-      "type": "text",
-      "title": "📊 Resumen del dashboard conjunto",
       "gridPos": {
-        "h": 4,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 83
       },
+      "id": 35,
       "options": {
-        "mode": "markdown",
-        "content": "## Resumen del sistema UAV-LoRaWAN (TFG)\n\nEste dashboard conjunto integra los datos de ambas motas LoRaWAN y las métricas del dron en una única vista de monitorización.\n\n| Dispositivo | DevEUI | Rol | GNSS en InfluxDB |\n|---|---|---|---|\n| **Heltec Wireless Tracker** | `a4cf123456789a01` | Mota principal — métricas dron + GNSS (Ámbar) | 🔧 Decoder actualizado: 0=sin fix, ≠0=válido |\n| **LINK ONE 13** | `000000000000100d` | Apoyo — validación visualización geográfica (Azul) | ✅ Disponible (Cayenne LPP) |\n\n> **Valores centinela decoder Heltec:**\n> - `latitude` = 0 y `longitude` = 0 → sin fix GPS (usar `gps_fix_raw` para confirmar).\n> - `altitude_m` = 0 → altitud no disponible.\n> - `drone_battery_percent` = 255 → sin comunicación con el dron.\n> - `drone_tof_cm`, `drone_speed`, `drone_time_s` = -1 → sin dato del dron en ese ciclo."
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## Resumen del sistema UAV-LoRaWAN (TFG)\n\nEste dashboard conjunto integra los datos de ambas motas LoRaWAN y las métricas del dron en una única vista de monitorización.\n\n| Dispositivo | DevEUI | Rol | GNSS en InfluxDB |\n|---|---|---|---|\n| **Heltec Wireless Tracker** | `a4cf123456789a01` | Mota principal — métricas dron + GNSS (Ámbar) | 🔧 Decoder actualizado: 0=sin fix, ≠0=válido |\n| **LINK ONE 13** | `000000000000100d` | Apoyo — validación visualización geográfica (Azul) | ✅ Disponible (Cayenne LPP) |\n\n> **Valores centinela decoder Heltec:**\n> - `latitude` = 0 y `longitude` = 0 → sin fix GPS (usar `gps_fix_raw` para confirmar).\n> - `altitude_m` = 0 → altitud no disponible.\n> - `drone_battery_percent` = 255 → sin comunicación con el dron.\n> - `drone_tof_cm`, `drone_speed`, `drone_time_s` = -1 → sin dato del dron en ese ciclo.",
+        "mode": "markdown"
       },
-      "id": 35
+      "pluginVersion": "11.6.1",
+      "title": "📊 Resumen del dashboard conjunto",
+      "type": "text"
     }
   ],
+  "preload": false,
   "refresh": "10s",
-  "schemaVersion": 39,
-  "style": "dark",
+  "schemaVersion": 41,
   "tags": [
     "LoRaWAN",
     "ChirpStack",
@@ -1360,11 +2260,12 @@
   "templating": {
     "list": [
       {
-        "current": {},
-        "hide": 0,
+        "current": {
+          "text": "influxdb-lorawan",
+          "value": "efl8qd7iuew3kb"
+        },
         "includeAll": false,
         "label": "Datasource InfluxDB",
-        "multi": false,
         "name": "DS_INFLUXDB",
         "options": [],
         "query": "influxdb",
@@ -1374,25 +2275,30 @@
       },
       {
         "current": {
-          "selected": true,
           "text": "lorawan-gps-uav",
           "value": "lorawan-gps-uav"
         },
-        "hide": 0,
         "label": "Bucket InfluxDB",
         "name": "bucket",
+        "options": [
+          {
+            "selected": true,
+            "text": "lorawan-gps-uav",
+            "value": "lorawan-gps-uav"
+          }
+        ],
         "query": "lorawan-gps-uav",
         "type": "textbox"
       }
     ]
   },
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2026-05-23T09:00:00.000Z",
+    "to": "2026-05-23T09:50:59.000Z"
   },
+  "timepicker": {},
   "timezone": "browser",
   "title": "TFG UAV-LoRaWAN — Dashboard Conjunto Heltec + LINK ONE + Dron",
   "uid": "tfg-conjunto-heltec-linkone-dron",
-  "version": 2,
-  "weekStart": ""
+  "version": 10
 }
