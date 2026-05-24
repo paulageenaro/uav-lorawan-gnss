@@ -215,17 +215,33 @@ def main():
     print_styled("🛸 INFLUXDB DATA EXPORTER - TFG UAV LoRaWAN", Colors.HEADER, bold=True)
     print_styled("==================================================", Colors.OKBLUE)
     
+    # Determinar el directorio base del script para resolución robusta de rutas
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(base_dir, '.env')
+    
     # Cargar variables del entorno o .env local
-    env_vars = load_env()
+    env_vars = load_env(env_path)
+    
+    # Configurar rutas por defecto inteligentes relativas a la estructura del repo
+    default_query = os.path.join(base_dir, 'query.flux')
+    default_csv = os.path.join(base_dir, 'chirpstack_export.csv')
+    
+    # La carpeta test_data está en la raíz del repositorio, es decir, el directorio padre de influx-exporter/
+    repo_root = os.path.dirname(base_dir)
+    test_data_dir = os.path.join(repo_root, 'test_data')
+    if not os.path.exists(test_data_dir):
+        # Fallback al directorio del script si no existiese test_data
+        test_data_dir = base_dir
+    default_json = os.path.join(test_data_dir, 'chirpstack_export.json')
     
     # Parser de argumentos
     parser = argparse.ArgumentParser(description="Exporta datos de InfluxDB a CSV y JSON.")
     parser.add_argument('--token', default=env_vars.get('INFLUX_TOKEN'), help="Token de API de InfluxDB")
     parser.add_argument('--org', default=env_vars.get('INFLUX_ORG', 'rim-org'), help="Organización de InfluxDB")
     parser.add_argument('--url', default=env_vars.get('INFLUX_URL', 'http://localhost:8086'), help="URL de InfluxDB")
-    parser.add_argument('--query-file', default='query.flux', help="Archivo que contiene la consulta Flux")
-    parser.add_argument('--out-csv', default='chirpstack_export.csv', help="Ruta del archivo CSV de salida")
-    parser.add_argument('--out-json', default='chirpstack_export.json', help="Ruta del archivo JSON de salida")
+    parser.add_argument('--query-file', default=default_query, help="Archivo que contiene la consulta Flux")
+    parser.add_argument('--out-csv', default=default_csv, help="Ruta del archivo CSV de salida")
+    parser.add_argument('--out-json', default=default_json, help="Ruta del archivo JSON de salida")
     
     args = parser.parse_args()
     
