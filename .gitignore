@@ -9,6 +9,13 @@ build/
 
 # Archivo de configuración con claves reales (¡No subir a Git!)
 config.h
+.env
+.env.local
+
+# Archivos de exportación temporal y datos grandes
+*export.csv
+*export.json
+!*export_filtered.json
 
 # Archivos de SO
 .DS_Store
