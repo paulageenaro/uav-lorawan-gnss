@@ -21,12 +21,11 @@ La arquitectura se compone de los siguientes elementos en topología de estrella
 
 ## 3. Arquitectura de la solución con dron
 
-Esta arquitectura expande el caso anterior incorporando un **dron DJI RoboMaster TT / Tello Talent** y un microcontrolador **ESP32** (o kit de expansión) que actúa como pasarela WiFi-UDP.
+Esta arquitectura expande el caso anterior incorporando directamente el **dron DJI RoboMaster TT / Tello Talent** a la red local del nodo, eliminando hardware intermedio y optimizando peso y consumo a bordo del UAV.
 
-Los componentes adicionales y su interacción son:
-- **Dron (UAV):** Expone un punto de acceso (AP) WiFi y un servidor UDP (puerto 8889) a través de su SDK, permitiendo la lectura de sus métricas internas (batería, altímetro ToF, velocidad, tiempo de vuelo).
-- **ESP32 (Puente UAV-Mota):** Se conecta simultáneamente a la red WiFi del dron (modo *Station*) y despliega una red inalámbrica propia (modo *Access Point*). Interroga al dron por UDP para extraer las métricas y las retransmite por *broadcast* UDP hacia la mota.
-- **Mota Heltec (Nodo Integrador):** Se conecta a la red WiFi del ESP32. Durante una ventana de tiempo predefinida, escucha los paquetes UDP con las métricas del dron. Posteriormente, lee su propio GNSS, concatena toda la información (UAV + GNSS) en un único *payload* y lo transmite por la red LoRaWAN hacia el gateway.
+Los componentes y su interacción son:
+- **Dron (UAV):** Expone un punto de acceso (AP) WiFi y un servidor UDP (puerto 8889) a través de su SDK, recibiendo comandos de control y consultas y devolviendo sus métricas internas (batería, altímetro ToF, velocidad, tiempo de vuelo).
+- **Mota Heltec (Nodo Integrador y Cliente del SDK):** Se conecta de forma directa al punto de acceso WiFi del dron (modo *Station*). Habilita el modo SDK enviando el comando `command` via UDP y realiza consultas secuenciales (`battery?`, `tof?`, `speed?`, `time?`) para recuperar de forma interactiva e inmediata la telemetría del UAV. Tras las consultas, apaga su antena WiFi, adquiere su posición GNSS, concatena la información (UAV + GNSS) en un único *payload* de 20 bytes y lo transmite por LoRaWAN.
 
 El resto de la infraestructura (ChirpStack, InfluxDB, Grafana) se mantiene análoga al primer escenario, adaptando únicamente el *codec* y las consultas para procesar las nuevas métricas.
 
@@ -40,12 +39,12 @@ El resto de la infraestructura (ChirpStack, InfluxDB, Grafana) se mantiene anál
 5. **Persistencia:** ChirpStack envía un evento a InfluxDB, escribiendo cada campo decodificado.
 6. **Visualización:** Grafana ejecuta consultas sobre InfluxDB y refresca los paneles en pantalla.
 
-### 4.2. Flujo con dron integrado (Dron/ESP32)
-1. **Adquisición UAV:** El dron expone sus métricas por WiFi.
-2. **Puente local:** El ESP32 envía comandos (ej. `battery?`) al dron por UDP (8889), recibe respuestas y construye una cadena de texto (ej. `BAT=87;TOF=40...`).
-3. **Transmisión WiFi:** El ESP32 difunde esta cadena por *broadcast* UDP (puerto 4210).
-4. **Fusión de datos:** La Heltec, conectada al WiFi del ESP32, lee este paquete UDP (`udp.parsePacket()`). A continuación, lee el GNSS.
-5. **Transmisión LoRaWAN:** La Heltec construye un paquete ampliado y lo transmite por LoRaWAN, apagando temporalmente su módulo WiFi para ahorrar energía y evitar interferencias.
+### 4.2. Flujo con dron integrado (Consulta Directa)
+1. **Adquisición UAV:** El dron expone su API/SDK mediante su AP WiFi local.
+2. **Conexión Directa:** La placa Heltec activa su transceptor WiFi en modo estación (`WIFI_STA`), se conecta al AP del dron e inicia una sesión UDP en el puerto local `8889`.
+3. **Consulta de Métricas:** La Heltec inicializa el SDK enviando `"command"`. Una vez habilitado, envía comandos secuenciales (`battery?`, `tof?`, `speed?`, `time?`) al dron, recibiendo de forma síncrona las métricas de vuelo y almacenándolas en memoria. Durante las esperas UDP, la Heltec sigue alimentando de forma activa el parser GNSS para no perder el fix satelital.
+4. **Fusión de datos:** La Heltec desconecta el WiFi y apaga el transceptor de radio local para evitar interferencias físicas con LoRaWAN y ahorrar batería. Posteriormente, integra la telemetría capturada con sus coordenadas geográficas.
+5. **Transmisión LoRaWAN:** La Heltec empaqueta las lecturas en la trama binaria de 20 bytes y realiza el uplink por LoRaWAN.
 6. **Procesamiento en Nube:** El flujo en el Gateway, ChirpStack, InfluxDB y Grafana es idéntico, decodificando ahora las métricas adicionales (batería dron, velocidad, etc.).
 
 ## 5. Explicación de los códigos de la implementación
@@ -60,13 +59,9 @@ El *software* desarrollado en el marco del proyecto se clasifica en cuatro códi
    * **Función:** Es la versión definitiva para el primer escenario. Mantiene intacta la máquina de estados nativa de la librería Heltec (`DEVICE_STATE_INIT`, `JOIN`, `SEND`, `CYCLE`, `SLEEP`).
    * **Propósito:** Maximiza la eficiencia energética utilizando `LoRaWAN.sleep()`. La desconexión del puerto serie bajo esta versión es el comportamiento esperado y no un fallo del sistema. 
 
-3. **Código del ESP32/Kit del dron (`ESP32_kit_dron.ino`):**
-   * **Función:** Implementa un modo dual de red WiFi (`WIFI_AP_STA`). Por un lado, se conecta como cliente al dron Tello y gestiona el protocolo SDK mediante intercambio asíncrono UDP. Por otro lado, crea un *Access Point* y difunde las métricas parseadas.
-   * **Propósito:** Desacoplar la interacción con el SDK propietario del dron de la lógica de transmisión LoRaWAN, otorgando modularidad al diseño.
-
-4. **Código Heltec integrado (`heltec_dron_14_05.ino`):**
-   * **Función:** Combina las lecturas GNSS y la recepción WiFi/UDP en la misma máquina de estados LoRaWAN. 
-   * **Propósito:** Se conecta al ESP32 temporalmente en cada ciclo, recupera la cadena de datos, cierra la conexión WiFi (para no interrumpir las temporizaciones de radio y ahorrar batería), prepara el *payload* de 20 bytes y lo emite. Incorpora mecanismos de robustez: si el dron no responde, el *payload* se envía con valores predeterminados de error (`-1`).
+3. **Código Heltec integrado directo (`heltec_mota_integrada.ino`):**
+   * **Función:** Integra el rol de cliente del SDK del dron (conexión WiFi, activación del SDK y consulta UDP interactiva) directamente dentro del firmware principal y de su máquina de estados LoRaWAN.
+   * **Propósito:** Ofrecer un firmware unificado y sumamente eficiente que no requiere hardware intermediario, facilitando la instalación a bordo de UAVs pequeños. Implementa retardo activo asíncrono (`delayWithGps`) para continuar el procesado UART del receptor GNSS mientras realiza las consultas de red, previniendo la pérdida de fix y asegurando que las banderas de error (batería a `255`, ToF y velocidad a `-1`) se envíen si el dron no responde o está apagado.
 
 ## 6. Explicación de las tramas de datos (*Payloads*)
 
@@ -81,7 +76,7 @@ Utilizado en el sistema sin dron:
 - `Bytes 10-11`: Altitud en metros (entero de 16 bits con signo)
 
 ### Payload Ampliado (20 bytes)
-Utilizado en la prueba con el UAV. Añade las métricas obtenidas por el ESP32:
+Utilizado en la prueba con el UAV. Añade las métricas obtenidas directamente del SDK del dron:
 - `Byte 12`: Nivel de batería del dron (%) (entero de 8 bits con signo)
 - `Bytes 13-14`: Altímetro ToF del dron (cm) (entero de 16 bits)
 - `Bytes 15-16`: Velocidad del dron (cm/s) (entero de 16 bits)
@@ -230,7 +225,7 @@ Durante la etapa de integración se solventaron múltiples dificultades técnica
 - **Desconexión USB por `LoRaWAN.sleep()`:** El modo de ahorro de energía suspendía los periféricos de la placa, provocando que el ordenador cerrase el puerto serie. Se identificó que no constituía un fallo lógico, y se diseñó el código de depuración `v2` exento de suspensiones para aislar problemas de desarrollo sin perder los registros impresos por pantalla.
 - **Tráfico `JoinRequest` sin `UnconfirmedDataUp`:** En ocasiones, el nodo completaba la negociación OTAA pero no transmitía los datos. Se identificó que la rutina de lectura del GNSS bloqueaba el ciclo de ejecución. La solución consistió en implementar una lectura basada en ventanas temporales (`readGpsWindow`) asíncronas.
 - **Invisibilidad de variables en Grafana:** A pesar de que ChirpStack registraba las métricas, Grafana mostraba paneles vacíos. El problema residía en el diseño de las consultas (*queries*). Se corrigió filtrando explícitamente por el tag de `_measurement` (`device_frmpayload_data_...`) y no solo intentando buscar el `_field`.
-- **Interferencia WiFi/LoRa:** Activar simultáneamente la antena LoRa y la antena WiFi/Bluetooth en el procesador principal (ESP32) causaba consumos pico y colapsos de memoria. La arquitectura final resuelve esto encendiendo el WiFi únicamente en la ventana de escucha (`receiveDroneMetricsWindow`), apagándolo inmediatamente antes de solicitar el `LoRaWAN.send()`.
+- **Interferencia WiFi/LoRa:** Activar simultáneamente la antena LoRa y la antena WiFi/Bluetooth en el procesador principal (ESP32) causaba consumos pico y colapsos de memoria. La arquitectura final resuelve esto encendiendo el WiFi únicamente en la ventana de escucha (`queryDroneMetrics`), apagándolo inmediatamente antes de solicitar el `LoRaWAN.send()`.
 
 ## 11. Resultados obtenidos
 

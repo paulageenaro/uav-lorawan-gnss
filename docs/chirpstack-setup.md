@@ -15,7 +15,7 @@ El *Device Profile* indica al servidor las capacidades técnicas del nodo.
 ## 2. Registrar el Dispositivo (Device)
 1. Ir a **Applications** -> Seleccionar la aplicación -> **Devices** -> *Add device*.
 2. Nombre: (Ej. "UAV-Node-1").
-3. DevEUI: Introducir el DevEUI configurado en el código principal (`heltec_gnss_lorawan.ino`).
+3. DevEUI: Introducir el DevEUI configurado en el código del firmware (ej. `v1_estable.ino` o `heltec_mota_integrada.ino`).
 4. Seleccionar el *Device Profile* creado en el paso anterior.
 5. Al guardar, en la pestaña **Keys (OTAA)**:
    - Introducir la **Application Key (AppKey)**.

@@ -26,7 +26,7 @@ Utilizado en la prueba `2_lorawan_gnss_uav_integrado`. Se compone de los 12 byte
 | `19` | 1 byte | Estado SDK | `1` si el SDK está activo, `0` en caso contrario. |
 
 > **Nota sobre Valores Centinela:** 
-> Para evitar conflictos de tipos y garantizar que InfluxDB persista la métrica en Grafana, se evitan los valores nulos (`null`). Si el GNSS pierde cobertura, el *decoder* envía explícitamente latitud `0` y longitud `0`. Del mismo modo, si el ESP32 no encuentra al dron, se envían los valores especiales descritos en la tabla (`255` para batería, `-1` para los de 16 bits).
+> Para evitar conflictos de tipos y garantizar que InfluxDB persista la métrica en Grafana, se evitan los valores nulos (`null`). Si el GNSS pierde cobertura, el *decoder* envía explícitamente latitud `0` y longitud `0`. Del mismo modo, si la mota Heltec no encuentra al dron, se envían los valores especiales descritos en la tabla (`255` para batería, `-1` para los de 16 bits).
 
 ## Decodificación (Lado del Servidor)
 En ChirpStack, estos payloads deben invertirse. En la carpeta `/payload-decoders/` encontrarás `chirpstack_decoder.js` (para 12 bytes) y `chirpstack_decoder_20_bytes.js` (para 20 bytes).
