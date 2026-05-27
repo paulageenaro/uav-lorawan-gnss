@@ -173,7 +173,7 @@ A continuación se muestra un ejemplo de registro real JSON exportado de ChirpSt
 }
 ```
 
-![Captura de la interfaz de ChirpStack mostrando el registro de eventos del dispositivo Heltec. Se aprecian las tramas de datos "up" junto con la decodificación exitosa en formato JSON de las métricas del dron (batería a 255 y otros a -1 indicando desconexión) y estado GNSS dentro del campo object.](../images/chirpstack_test_gnss_events.png)
+![Captura de la interfaz de ChirpStack mostrando el registro de eventos del dispositivo Heltec. Se aprecian las tramas de datos "up" junto con la decodificación exitosa en formato JSON de las métricas del dron (batería a 255 y otros a -1 indicando desconexión) y estado GNSS dentro del campo object.](../test_data/images/chirpstack_test_gnss_events.png)
 
 ## 8. Integración con InfluxDB
 
@@ -201,27 +201,27 @@ Con el fin de soportar escenarios complejos de múltiples rescatistas y telemetr
    
    *   **Evolución temporal del vuelo**: Las capturas tomadas a las **11:44:12** y a las **12:53:34** reflejan la persistencia histórica de las series temporales a lo largo de una sesión continua, permitiendo a los operadores verificar la tendencia de consumo de batería de la aeronave y la fluctuación de los enlaces de radio.
    
-   ![Captura del Dashboard Especializado Heltec a mitad de la prueba (11:44:12).](../images/grafana_heltec_uav_dashboard_1144.png)
+   ![Captura del Dashboard Especializado Heltec a mitad de la prueba (11:44:12).](../test_data/images/grafana_heltec_uav_dashboard_1144.png)
    
-   ![Captura del Dashboard Especializado Heltec al finalizar la prueba (12:53:34) mostrando la acumulación de datos históricos.](../images/grafana_heltec_uav_dashboard_1253.png)
+   ![Captura del Dashboard Especializado Heltec al finalizar la prueba (12:53:34) mostrando la acumulación de datos históricos.](../test_data/images/grafana_heltec_uav_dashboard_1253.png)
 
 2. **Dashboard Individual Mota LinkOne**:
    Corresponde al panel exclusivo para el rastreador de emergencia secundario `LinkOne 13` (mota táctica alternativa). Permite aislar su comportamiento de red (`fCnt`, RSSI, SNR) y evaluar su mapa cartográfico de manera independiente de la mota del dron.
    
-   ![Captura del Dashboard Individual de la mota LinkOne 13 (12:55:15).](../images/grafana_linkone_individual_dashboard.png)
+   ![Captura del Dashboard Individual de la mota LinkOne 13 (12:55:15).](../test_data/images/grafana_linkone_individual_dashboard.png)
 
 3. **Dashboard Conjunto Multi-Nodo (Integrador del Sistema)**:
    Es el panel maestro de control de misión ("TFG Conjunto - Heltec, LinkOne, Dron"). Permite una supervisión unificada al integrar las coordenadas en mapa de **ambos dispositivos rastreadores** simultáneamente, junto con la telemetría en tiempo real del dron. 
    
    Esta visualización combinada es idónea para coordinar operaciones de rescate complejas, donde se puede contrastar la posición del UAV de búsqueda aérea en relación con los rescatistas en tierra equipados con trackers.
    
-   ![Captura del Dashboard Conjunto mostrando el posicionamiento multi-nodo inicial (12:52:51).](../images/grafana_conjunto_dashboard_1252.png)
+   ![Captura del Dashboard Conjunto mostrando el posicionamiento multi-nodo inicial (12:52:51).](../test_data/images/grafana_conjunto_dashboard_1252.png)
    
-   ![Captura del Dashboard Conjunto detallando el avance de las trayectorias de ambos nodos en el mapa (12:55:44).](../images/grafana_conjunto_dashboard_1255.png)
+   ![Captura del Dashboard Conjunto detallando el avance de las trayectorias de ambos nodos en el mapa (12:55:44).](../test_data/images/grafana_conjunto_dashboard_1255.png)
 
 ---
 
-![Captura del panel principal diseñado en Grafana. Muestra en tiempo real la evolución de la calidad del enlace radio (gráficas temporales de RSSI y SNR), la progresión del contador de paquetes (fCnt) y los indicadores (*gauges* y gráficas) de la telemetría del UAV: batería restante (%), altitud relativa ToF (cm), velocidad (cm/s) y tiempo de vuelo (s).](../images/grafana_dashboard_telemetry.jpg)
+![Captura del panel principal diseñado en Grafana. Muestra en tiempo real la evolución de la calidad del enlace radio (gráficas temporales de RSSI y SNR), la progresión del contador de paquetes (fCnt) y los indicadores (*gauges* y gráficas) de la telemetría del UAV: batería restante (%), altitud relativa ToF (cm), velocidad (cm/s) y tiempo de vuelo (s).](../test_data/images/grafana_dashboard_telemetry.jpg)
 
 ## 10. Problemas encontrados y soluciones implementadas
 

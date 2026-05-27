@@ -29,13 +29,14 @@ La infraestructura receptora en la nube se compone de:
 *   [`/firmware`](./firmware/): Códigos fuente C++/Arduino para los controladores del sistema:
     *   **`1_lorawan_gnss_basico`**: Firmware básico de geolocalización autónoma. Cuenta con versión estándar con bajo consumo `v1_estable` (`LoRaWAN.sleep()`) y versión de desarrollo `v2_depuracion` (`delay()`).
     *   **`2_lorawan_gnss_uav_integrado`**: Firmware para el puente `esp32_pasarela` (WiFi-UDP al SDK del dron) y `heltec_mota_integrada` (fusión de datos y transmisión LoRa).
+    *   **`3_prueba_gps_heltec`**: Código de diagnóstico sencillo para verificar el funcionamiento del receptor GNSS de la placa Heltec por puerto serie sin necesidad de conectarse a la red LoRaWAN.
 *   [`/dashboards`](./dashboards/): Ficheros de configuración JSON listos para importar en Grafana:
     *   `dashboard_heltec_lorawan_dron.json`: Especializado en la mota principal Heltec y la telemetría del UAV.
     *   `dashboard_linkone_gnss.json`: Individualizado para la mota de apoyo secundaria LINK ONE (Cayenne LPP).
     *   `dashboard_conjunto_heltec_linkone_dron.json`: Dashboard integrador y unificado multi-nodo con mapas cartográficos conjuntos en tiempo real.
 *   [`/payload-decoders`](./payload-decoders/): Decodificadores JavaScript (`decodeUplink`) para el Network Server de ChirpStack.
 *   [`/docs`](./docs/): Guías detalladas de arquitectura, formato de compresión binaria y resolución de problemas (*troubleshooting*).
-*   [`/images`](./images/): Registro de diagramas de red, evidencias reales de ChirpStack, logs de tramas y capturas de los paneles de Grafana durante las pruebas de campo.
+*   [`/test_data/images`](./test_data/images/): Registro de diagramas de red, evidencias reales de ChirpStack, logs de tramas y capturas de los paneles de Grafana durante las pruebas de campo.
 *   [`/test_data`](./test_data/): Volcados y payloads reales en formato JSON útiles para depuración de codecs y bases de datos.
 
 ---
