@@ -14,15 +14,14 @@ static const int GNSS_RX_PIN   = 33;
 static const int GNSS_TX_PIN   = 34;
 static const int GNSS_RST_PIN  = 35;
 
-// -------------------- WiFi/UDP ESP32 dron --------------------
-const char* UAV_AP_SSID = "UAV_METRICS_AP";
-const char* UAV_AP_PASS = "12345678";
+// -------------------- WiFi/UDP Tello Dron --------------------
+const char* TELLO_SSID = "TELLO-99454F";
+const char* TELLO_PASS = "";
+IPAddress TELLO_IP(192, 168, 10, 1);
+const uint16_t TELLO_CMD_PORT = 8889;
+const uint16_t LOCAL_PORT = 8889;
 
 WiFiUDP udp;
-const uint16_t UDP_LISTEN_PORT = 4210;
-
-// Tiempo máximo escuchando métricas UDP antes de cada uplink
-const uint32_t UDP_LISTEN_WINDOW_MS = 5000;
 
 // -------------------- OTAA keys --------------------
 uint8_t devEui[] = {
@@ -74,92 +73,112 @@ int droneWifiRssi = 0;
 unsigned long lastUdpPacketMs = 0;
 
 // ----------------------------------------------------
-// Obtener valor de un mensaje tipo:
-// BAT=87;TOF=40;SPD=10;TIME=0;SDK=1;RSSI=-45
+// Auxiliar: Realiza un retardo procesando bytes GNSS
 // ----------------------------------------------------
-int getValueFromMessage(String msg, const String& key, int defaultValue) {
-  String search = key + "=";
-  int start = msg.indexOf(search);
-
-  if (start < 0) {
-    return defaultValue;
+void delayWithGps(uint32_t ms) {
+  uint32_t start = millis();
+  while (millis() - start < ms) {
+    while (GNSS.available()) {
+      gps.encode(GNSS.read());
+    }
+    delay(2);
   }
-
-  start += search.length();
-
-  int end = msg.indexOf(";", start);
-  if (end < 0) {
-    end = msg.length();
-  }
-
-  String value = msg.substring(start, end);
-  value.trim();
-
-  return value.toInt();
 }
 
 // ----------------------------------------------------
-// Lee un paquete UDP si está disponible
+// Envía un comando por UDP al SDK del dron y espera respuesta
+// manteniendo alimentado el descodificador GNSS
 // ----------------------------------------------------
-void readUdpPacketIfAvailable() {
-  int packetSize = udp.parsePacket();
-
-  if (packetSize <= 0) {
-    return;
+String sendTelloCommand(const String& cmd, uint32_t timeoutMs = 1000) {
+  // Limpia posibles paquetes UDP antiguos
+  while (udp.parsePacket() > 0) {
+    while (udp.available()) {
+      udp.read();
+    }
   }
 
-  char buffer[256];
-  int len = udp.read(buffer, sizeof(buffer) - 1);
+  Serial.print("[TELLO TX] ");
+  Serial.println(cmd);
 
-  if (len <= 0) {
-    return;
-  }
+  udp.beginPacket(TELLO_IP, TELLO_CMD_PORT);
+  udp.print(cmd);
+  udp.endPacket();
 
-  buffer[len] = '\0';
-
-  String msg = String(buffer);
-  msg.trim();
-
-  Serial.print("[UDP RX] ");
-  Serial.println(msg);
-
-  droneBattery  = getValueFromMessage(msg, "BAT", droneBattery);
-  droneTof      = getValueFromMessage(msg, "TOF", droneTof);
-  droneSpeed    = getValueFromMessage(msg, "SPD", droneSpeed);
-  droneTime     = getValueFromMessage(msg, "TIME", droneTime);
-  droneSdk      = getValueFromMessage(msg, "SDK", droneSdk);
-  droneWifiRssi = getValueFromMessage(msg, "RSSI", droneWifiRssi);
-
-  lastUdpPacketMs = millis();
-
-  Serial.println("Métricas del dron actualizadas:");
-  Serial.print("BAT = "); Serial.println(droneBattery);
-  Serial.print("TOF = "); Serial.println(droneTof);
-  Serial.print("SPD = "); Serial.println(droneSpeed);
-  Serial.print("TIME = "); Serial.println(droneTime);
-  Serial.print("SDK = "); Serial.println(droneSdk);
-  Serial.print("RSSI = "); Serial.println(droneWifiRssi);
-}
-
-// ----------------------------------------------------
-// Conectar al AP del ESP32 del dron y escuchar UDP
-// ----------------------------------------------------
-void receiveDroneMetricsWindow(uint32_t listenMs) {
-  Serial.println();
-  Serial.println("----- WIFI/UDP DRON -----");
-  Serial.print("Conectando a AP: ");
-  Serial.println(UAV_AP_SSID);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(UAV_AP_SSID, UAV_AP_PASS);
-
-  uint32_t startConnect = millis();
-
-  while (WiFi.status() != WL_CONNECTED && millis() - startConnect < 8000) {
+  uint32_t start = millis();
+  while (millis() - start < timeoutMs) {
     while (GNSS.available()) {
       gps.encode(GNSS.read());
     }
 
+    int packetSize = udp.parsePacket();
+    if (packetSize > 0) {
+      char buffer[128];
+      int len = udp.read(buffer, sizeof(buffer) - 1);
+      if (len > 0) {
+        buffer[len] = '\0';
+      }
+
+      String response = String(buffer);
+      response.trim();
+
+      Serial.print("[TELLO RX] ");
+      Serial.println(response);
+      return response;
+    }
+    delay(5);
+  }
+
+  Serial.print("[TELLO RX] TIMEOUT: ");
+  Serial.println(cmd);
+  return "";
+}
+
+// ----------------------------------------------------
+// Convierte una respuesta de texto a un entero válido
+// ----------------------------------------------------
+int responseToInt(const String& response) {
+  if (response.length() == 0) {
+    return -1;
+  }
+  if (response == "ok" || response == "error") {
+    return -1;
+  }
+  return response.toInt();
+}
+
+// ----------------------------------------------------
+// Habilita el modo SDK en el dron Tello
+// ----------------------------------------------------
+bool enterTelloSdkMode() {
+  Serial.println("Entrando en modo SDK del Tello...");
+  String response = sendTelloCommand("command", 1500);
+  if (response == "ok") {
+    Serial.println("Modo SDK activado correctamente.");
+    return true;
+  }
+  Serial.println("No se pudo activar el modo SDK.");
+  return false;
+}
+
+// ----------------------------------------------------
+// Conectar al WiFi del dron y consultar métricas UDP/SDK
+// ----------------------------------------------------
+void queryDroneMetrics() {
+  Serial.println();
+  Serial.println("----- WIFI/UDP TELLO DRON -----");
+  Serial.print("Conectando al WiFi del dron: ");
+  Serial.println(TELLO_SSID);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(TELLO_SSID, TELLO_PASS);
+
+  uint32_t startConnect = millis();
+
+  // Esperar conexión manteniendo alimentado el GNSS
+  while (WiFi.status() != WL_CONNECTED && millis() - startConnect < 8000) {
+    while (GNSS.available()) {
+      gps.encode(GNSS.read());
+    }
     delay(200);
     Serial.print(".");
   }
@@ -167,42 +186,56 @@ void receiveDroneMetricsWindow(uint32_t listenMs) {
   Serial.println();
 
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("No se pudo conectar al AP del ESP32 del dron.");
+    Serial.println("No se pudo conectar al WiFi del dron.");
     Serial.println("Se enviará LoRaWAN con las últimas métricas disponibles.");
-
+    droneSdk = 0;
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
     delay(200);
     return;
   }
 
-  Serial.println("Conectada al AP del ESP32 del dron.");
+  Serial.println("Conectado al WiFi del dron.");
   Serial.print("IP Heltec: ");
   Serial.println(WiFi.localIP());
-  Serial.print("RSSI WiFi: ");
-  Serial.println(WiFi.RSSI());
+  
+  droneWifiRssi = WiFi.RSSI();
+  Serial.print("RSSI WiFi dron: ");
+  Serial.println(droneWifiRssi);
 
-  udp.begin(UDP_LISTEN_PORT);
+  // Iniciar UDP local para comunicación con el dron
+  if (udp.begin(LOCAL_PORT)) {
+    Serial.print("UDP iniciado en puerto local ");
+    Serial.println(LOCAL_PORT);
 
-  Serial.print("Escuchando UDP en puerto ");
-  Serial.println(UDP_LISTEN_PORT);
+    // Activar modo SDK y consultar métricas
+    bool sdkOk = enterTelloSdkMode();
+    droneSdk = sdkOk ? 1 : 0;
 
-  uint32_t startListen = millis();
+    if (sdkOk) {
+      String batteryResp = sendTelloCommand("battery?");
+      droneBattery = responseToInt(batteryResp);
+      delayWithGps(80);
 
-  while (millis() - startListen < listenMs) {
-    while (GNSS.available()) {
-      gps.encode(GNSS.read());
+      String tofResp = sendTelloCommand("tof?");
+      droneTof = responseToInt(tofResp);
+      delayWithGps(80);
+
+      String speedResp = sendTelloCommand("speed?");
+      droneSpeed = responseToInt(speedResp);
+      delayWithGps(80);
+
+      String timeResp = sendTelloCommand("time?");
+      droneTime = responseToInt(timeResp);
+      delayWithGps(80);
     }
-
-    readUdpPacketIfAvailable();
-
-    delay(10);
+    udp.stop();
+  } else {
+    Serial.println("Error iniciando UDP local.");
+    droneSdk = 0;
   }
 
-  udp.stop();
-
-  Serial.println("Fin ventana UDP. Apagando WiFi antes de LoRaWAN.");
-
+  Serial.println("Apagando WiFi antes de LoRaWAN.");
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
   delay(300);
@@ -254,8 +287,8 @@ static void putInt16BE(uint8_t *buf, int16_t v) {
 // byte 19     -> SDK activo
 // ----------------------------------------------------
 static void prepareTxFrame(uint8_t port) {
-  // Primero intentamos recibir métricas reales del ESP32 del dron.
-  receiveDroneMetricsWindow(UDP_LISTEN_WINDOW_MS);
+  // Primero intentamos consultar métricas reales directamente al dron.
+  queryDroneMetrics();
 
   // Después damos un pequeño margen al GNSS.
   readGpsWindow(1000);

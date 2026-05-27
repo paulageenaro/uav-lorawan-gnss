@@ -14,7 +14,7 @@ La solución admite dos escenarios de despliegue según las necesidades operativ
 Permite el rastreo directo en exteriores. Una mota sensora autónoma (basada en el chip ESP32 Heltec Wireless Tracker) obtiene sus coordenadas satelitales y las emite mediante el protocolo de red LPWAN LoRaWAN.
 
 ### 2. Sistema Integrado UAV (Localizador + Telemetría Dron)
-El nodo final viaja embarcado en un **UAV (Dron DJI RoboMaster TT / Tello Talent)**. Un microcontrolador **ESP32 intermedio** interroga al dron por WiFi mediante su SDK y UDP (puerto 8889). Las métricas capturadas (batería, altitud ToF, velocidad, tiempo) se retransmiten localmente por *broadcast* UDP hacia la mota Heltec. Esta unifica las lecturas del GNSS propio con la telemetría del dron en un solo paquete binario consolidado y lo transmite a la red LoRaWAN.
+El nodo final viaja embarcado en un **UAV (Dron DJI RoboMaster TT / Tello Talent)**. La propia mota sensora (placa Heltec Wireless Tracker) se conecta de forma directa al punto de acceso WiFi del dron y consulta mediante UDP (puerto 8889) los comandos del SDK. Las métricas obtenidas (batería, altitud ToF, velocidad, tiempo de vuelo) se unifican con la geolocalización de su propio GNSS en un paquete binario integrado de 20 bytes para su posterior transmisión por LoRaWAN.
 
 La infraestructura receptora en la nube se compone de:
 *   **Gateway LoRaWAN**: Concentrador de RF que recibe los paquetes LoRa y los reenvía por protocolo IP.
@@ -28,7 +28,7 @@ La infraestructura receptora en la nube se compone de:
 
 *   [`/firmware`](./firmware/): Códigos fuente C++/Arduino para los controladores del sistema:
     *   **`1_lorawan_gnss_basico`**: Firmware básico de geolocalización autónoma. Cuenta con versión estándar con bajo consumo `v1_estable` (`LoRaWAN.sleep()`) y versión de desarrollo `v2_depuracion` (`delay()`).
-    *   **`2_lorawan_gnss_uav_integrado`**: Firmware para el puente `esp32_pasarela` (WiFi-UDP al SDK del dron) y `heltec_mota_integrada` (fusión de datos y transmisión LoRa).
+    *   **`2_lorawan_gnss_uav_integrado`**: Firmware para la placa `heltec_mota_integrada` (fusión directa de datos y transmisión LoRa al interrogar directamente al dron via WiFi/UDP).
     *   **`3_prueba_gps_heltec`**: Código de diagnóstico sencillo para verificar el funcionamiento del receptor GNSS de la placa Heltec por puerto serie sin necesidad de conectarse a la red LoRaWAN.
 *   [`/dashboards`](./dashboards/): Ficheros de configuración JSON listos para importar en Grafana:
     *   `dashboard_heltec_lorawan_dron.json`: Especializado en la mota principal Heltec y la telemetría del UAV.
