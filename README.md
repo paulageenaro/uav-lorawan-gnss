@@ -16,6 +16,8 @@ Permite el rastreo directo en exteriores. Una mota sensora autónoma (basada en 
 ### 2. Sistema Integrado UAV (Localizador + Telemetría Dron)
 El nodo final viaja embarcado en un **UAV (Dron DJI RoboMaster TT / Tello Talent)**. La propia mota sensora (placa Heltec Wireless Tracker) se conecta de forma directa al punto de acceso WiFi del dron y consulta mediante UDP (puerto 8889) los comandos del SDK. Las métricas obtenidas (batería, altitud ToF, velocidad, tiempo de vuelo) se unifican con la geolocalización de su propio GNSS en un paquete binario integrado de 20 bytes para su posterior transmisión por LoRaWAN.
 
+El firmware final mantiene el **GNSS siempre alimentado** (sin apagar VEXT en ningún momento del ciclo), incluye una **ventana de calentamiento de 30 s** en el arranque para facilitar la adquisición del primer fix, y aplica una **validación estricta de la posición**: solo se envían coordenadas reales si el fix es válido, tiene menos de 5 s de antigüedad y no corresponde a la coordenada nula 0,0. Las métricas del dron se reinician en cada ciclo para evitar arrastrar datos obsoletos.
+
 La infraestructura receptora en la nube se compone de:
 *   **Gateway LoRaWAN**: Concentrador de RF que recibe los paquetes LoRa y los reenvía por protocolo IP.
 *   **Network Server (ChirpStack v4)**: Autentica las motas (OTAA), deduplica paquetes y decodifica las tramas binarias a JSON legible utilizando decodificadores JavaScript personalizados.
@@ -28,7 +30,7 @@ La infraestructura receptora en la nube se compone de:
 
 *   [`/firmware`](./firmware/): Códigos fuente C++/Arduino para los controladores del sistema:
     *   **`1_lorawan_gnss_basico`**: Firmware básico de geolocalización autónoma. Cuenta con versión estándar con bajo consumo `v1_estable` (`LoRaWAN.sleep()`) y versión de desarrollo `v2_depuracion` (`delay()`).
-    *   **`2_lorawan_gnss_uav_integrado`**: Firmware para la placa `heltec_mota_integrada` (fusión directa de datos y transmisión LoRa al interrogar directamente al dron via WiFi/UDP).
+    *   **`2_lorawan_gnss_uav_integrado`**: Firmware final para la placa `heltec_mota_integrada`. Fusión directa de GNSS y telemetría del dron vía WiFi/UDP. Incluye GNSS siempre alimentado (`keepGnssPowered`), validación estricta de fix (`hasFreshGpsFix`), warmup de 30 s en boot, depuración GNSS periódica por puerto serie y reset de métricas del dron en cada ciclo.
     *   **`3_prueba_gps_heltec`**: Código de diagnóstico sencillo para verificar el funcionamiento del receptor GNSS de la placa Heltec por puerto serie sin necesidad de conectarse a la red LoRaWAN.
 *   [`/dashboards`](./dashboards/): Ficheros de configuración JSON listos para importar en Grafana:
     *   `dashboard_heltec_lorawan_dron.json`: Especializado en la mota principal Heltec y la telemetría del UAV.
@@ -50,7 +52,7 @@ Para maximizar la eficiencia y cumplir con el ciclo de trabajo (*Duty Cycle*) de
 2.  **Payload Ampliado UAV (20 bytes)**:
     `Payload Básico (12B) | Batería UAV (1B, uint8) | ToF Altímetro (2B, int16) | Velocidad UAV (2B, int16) | Tiempo Vuelo (2B, int16) | Estado SDK (1B)`
 
-*Nota: Ante fallas físicas o pérdida de enlace (por ejemplo, desconexión con el dron), el firmware y los decodificadores utilizan valores centinela específicos (batería a 255, ToF/velocidad a -1, coordenadas sin fix a 0) que garantizan la integridad de la base de datos sin colapsar las consultas visuales.*
+*Nota: El firmware solo envía coordenadas reales cuando `gps_fix = 1` (validación estricta: fix válido, edad < 5 s y posición ≠ 0,0). Ante fallas físicas o pérdida de enlace (por ejemplo, desconexión con el dron), el firmware y los decodificadores utilizan valores centinela específicos (batería a 255, ToF/velocidad/tiempo a -1, coordenadas sin fix a 0) que garantizan la integridad de la base de datos sin colapsar las consultas visuales. Las métricas del dron se reinician en cada ciclo para no arrastrar datos obsoletos.*
 
 ---
 

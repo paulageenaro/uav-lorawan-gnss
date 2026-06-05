@@ -14,7 +14,9 @@ Utilizado en la prueba `1_lorawan_gnss_basico`. (appPort = 2)
 | `10-11`| 2 bytes | Altitud | Entero con signo de 16 bits (`int16`). En metros. Especial `-32768` si es inválida. |
 
 ## 2. Payload Integrado UAV (20 bytes)
-Utilizado en la prueba `2_lorawan_gnss_uav_integrado`. Se compone de los 12 bytes del GNSS más 8 bytes adicionales de telemetría del dron.
+Utilizado en el firmware final `2_lorawan_gnss_uav_integrado`. Se compone de los 12 bytes del GNSS más 8 bytes adicionales de telemetría del dron.
+
+**Validación del fix GNSS:** El firmware solo marca `gps_fix = 1` y rellena las coordenadas con valores reales cuando se cumplen tres condiciones simultáneamente: la posición NMEA es válida, tiene una antigüedad menor de 5 segundos (`GPS_MAX_AGE_MS`) y no corresponde a la coordenada nula 0,0. Si cualquiera de estas condiciones falla, se envía `gps_fix = 0` con latitud y longitud a 0.
 
 | Byte | Tamaño | Descripción | Formato de Compresión |
 |------|--------|-------------|-----------------------|
@@ -26,7 +28,7 @@ Utilizado en la prueba `2_lorawan_gnss_uav_integrado`. Se compone de los 12 byte
 | `19` | 1 byte | Estado SDK | `1` si el SDK está activo, `0` en caso contrario. |
 
 > **Nota sobre Valores Centinela:** 
-> Para evitar conflictos de tipos y garantizar que InfluxDB persista la métrica en Grafana, se evitan los valores nulos (`null`). Si el GNSS pierde cobertura, el *decoder* envía explícitamente latitud `0` y longitud `0`. Del mismo modo, si la mota Heltec no encuentra al dron, se envían los valores especiales descritos en la tabla (`255` para batería, `-1` para los de 16 bits).
+> Para evitar conflictos de tipos y garantizar que InfluxDB persista la métrica en Grafana, se evitan los valores nulos (`null`). Si el GNSS pierde cobertura o la posición no pasa la validación estricta del firmware, se envía `gps_fix = 0` con latitud `0` y longitud `0`. En Grafana/InfluxDB se debe filtrar `gps_fix == 1` para mapas y análisis de posición. Del mismo modo, si la mota Heltec no encuentra al dron, se envían los valores especiales descritos en la tabla (`255` para batería, `-1` para los de 16 bits). Las métricas del dron se reinician a sus valores centinela en cada ciclo de transmisión para no arrastrar datos obsoletos.
 
 ## Decodificación (Lado del Servidor)
 En ChirpStack, estos payloads deben invertirse. En la carpeta `/payload-decoders/` encontrarás `chirpstack_decoder.js` (para 12 bytes) y `chirpstack_decoder_20_bytes.js` (para 20 bytes).
